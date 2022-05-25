@@ -22,19 +22,16 @@
 // SCL               PC5   |  28 |   A5
 // TX                PD1   |  2  |   1
 // RX                PD0   |  3  |   0
+// ARef (100nF Gnd)  ARef  |  20 |   ARef
 
-// pinout         ATMega | Phy  |  Uno
-#define LEDPIN1     1   // x     |  x
-#define LEDPIN2     3   // x     |  x
-#define LEDPIN3     4   // x     |  x
-#define GATEPIN     0   // x     |  x
-#define TEMPPIN     PC0 //  23   |  A0
+// pinout                   ATMega  | Phy  |  Uno
+#define LEDPIN1     1   //          |  x     |  x
+#define LEDPIN2     3   //          |  x     |  x
+#define LEDPIN3     4   //          |  x     |  x
+#define GATEPIN     0   //          |  x     |  x
+#define TEMPPIN     0xf0//  ADC0    |   23   |  A0
 #define SWITCHPIN   2   // x     |  x
 
-#define TEMP_GAIN	    1
-#define TEMP_OFFSET	    410     // Biased at 2V. 2/5*1024=410
-#define TEMP_SCALE      500     // LM35: 10mV per Celcius i.e. 5V/0.010 = 500
-#define VRef            1.1                 
 #define ITEMP_GAIN	    1
 #define ITEMP_OFFSET    322     // Offset for 0deg Celcius	
 #define ITEMP_SCALE     1       // AVR temp sensor: 1LSB per celcius    
@@ -50,15 +47,20 @@ static inline void initADC(void) {
 #endif 
 }
 
-uint16_t getTemp(void) { 
+#define ADC_VREF    50     // Vcc = 5.06
+#define TEMP_GAIN  108.5  // LMT86: 10.85mV per Celcius 
+#define TEMP_OFFSET	21      // Offset for 0deg Celcius
+
+int16_t getTemp(void) { 
     uint16_t temp;
 
-    ADCSRA |= (1 << ADEN);                      // enable ADC
-    ADMUX &= (~(1 << REFS1) | ~(1 << REFS0));   // Vcc as Voltage Ref 
-    ADMUX &= 0xf0;                              // Select PB5 (ADC0)
-    ADCSRA |= (1 << ADSC);                      // Start conversion
+    //ADCSRA |= _BV(ADEN);    // enable ADC
+    ADMUX = _BV(REFS0);     // Vcc as Voltage Ref 
+    ADMUX &= TEMPPIN;       // Select temperature pin
+    ADCSRA |= _BV(ADSC);  // Start conversion
     loop_until_bit_is_clear(ADCSRA, ADSC);
-    temp = TEMP_GAIN * (ADC - TEMP_OFFSET) * TEMP_SCALE / 1024; 
+    //T = ((ADC/1024)*VRef - TEMP_OFFSET ) / -TEMP_GAIN
+    temp =  (TEMP_OFFSET*1024 - ADC*ADC_VREF) / TEMP_GAIN; 
     return (temp); 
 }
 
