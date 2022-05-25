@@ -13,13 +13,23 @@
 #include <avr/io.h>
 #include <util/delay.h>
 
-// pinout                Phy  | ATMega |  Uno
-#define LEDPIN1     1  // x       Pxx      x
-#define LEDPIN2     3  // x       Pxx      x
-#define LEDPIN3     4  // x       Pxx      x
-#define GATEPIN     0  // x       Pxx      x
-#define TEMPPIN     A0 // x       Pxx      x
-#define SWITCHPIN   2  // x       Pxx      x
+// Reserved pins    ATMega | Phy |  Uno
+// Reset             PC6   |  1  |   reset
+// SCK               PB5   |  19 |   13
+// MISO              PB4   |  18 |   12
+// MOSI              PB3   |  17 |   11
+// SDA               PC4   |  27 |   A4
+// SCL               PC5   |  28 |   A5
+// TX                PD1   |  2  |   1
+// RX                PD0   |  3  |   0
+
+// pinout         ATMega | Phy  |  Uno
+#define LEDPIN1     1   // x     |  x
+#define LEDPIN2     3   // x     |  x
+#define LEDPIN3     4   // x     |  x
+#define GATEPIN     0   // x     |  x
+#define TEMPPIN     PC0 //  23   |  A0
+#define SWITCHPIN   2   // x     |  x
 
 #define TEMP_GAIN	    1
 #define TEMP_OFFSET	    410     // Biased at 2V. 2/5*1024=410
