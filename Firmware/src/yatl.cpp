@@ -57,6 +57,7 @@ uint16_t getTemp(void) {
 
     ADMUX = _BV(REFS0);   // Vcc as Voltage Ref 
     ADMUX &= TEMPPIN;     // Select temperature pin
+    _delay_ms(2);         // Settling time after changing ADMUX
     ADCSRA |= _BV(ADSC);  // Start conversion
     loop_until_bit_is_clear(ADCSRA, ADSC);
     //T = ((ADC/1024)*VRef - TEMP_OFFSET ) / -TEMP_GAIN
@@ -64,17 +65,12 @@ uint16_t getTemp(void) {
     return (temp); 
 }
 
-/*
- * BUG: getInternalTemp() does not work if another ADC is used
- *          - reproduce: supply 3.3v to ADC0/ADC1 and read the value
- *              while using getInternalTemp()
- * 
- */
 uint16_t getInternalTemp(void) { 
     uint16_t temp;
 
     ADMUX = _BV(REFS1) | _BV(REFS0);    // Internal 1.1V VRef
     ADMUX |= _BV(MUX3);                 // Select ADC8 i.e. Temp sensor
+    _delay_ms(10);                      // Settling time after changing ADMUX
     ADCSRA |= _BV(ADSC);                // Start conversion
     loop_until_bit_is_clear(ADCSRA, ADSC);
     temp = ITEMP_GAIN * (ADC - ITEMP_OFFSET);
@@ -87,7 +83,7 @@ uint16_t getVcc100(void) {
     ADMUX = _BV(REFS0);            // Vcc as Voltage Ref
     ADMUX |= _BV(MUX3) | _BV(MUX2) |
         _BV(MUX1);                 // Select internal 1.1V VRef
-    _delay_ms(1);                  // Settling time after changing ADMUX
+    _delay_ms(2);                  // Settling time after changing ADMUX
     ADCSRA |= _BV(ADSC);           // Start conversion
     loop_until_bit_is_clear(ADCSRA, ADSC);
     //vcc = 110 * 1024 / ADC;
