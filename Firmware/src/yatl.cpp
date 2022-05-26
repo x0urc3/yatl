@@ -35,6 +35,9 @@
 #define ITEMP_GAIN	    1
 #define ITEMP_OFFSET    322     // Offset for 0deg Celcius	
 #define ITEMP_SCALE     1       // AVR temp sensor: 1LSB per celcius    
+#define ADC_VREF    50    // Vcc = 5.06
+#define TEMP_GAIN   1085  // LMT86: 10.85mV per Celcius 
+#define TEMP_OFFSET	21    // Offset for 0deg Celcius
 
 static inline void initADC(void) {
     //ADC clock input 50-200kHz
@@ -48,19 +51,16 @@ static inline void initADC(void) {
     ADCSRA |= _BV(ADEN);                // enable ADC
 }
 
-#define ADC_VREF    50     // Vcc = 5.06
-#define TEMP_GAIN  108.5  // LMT86: 10.85mV per Celcius 
-#define TEMP_OFFSET	21      // Offset for 0deg Celcius
 
-int16_t getTemp(void) { 
+uint16_t getTemp(void) { 
     uint16_t temp;
 
-    ADMUX = _BV(REFS0);     // Vcc as Voltage Ref 
-    ADMUX &= TEMPPIN;       // Select temperature pin
+    ADMUX = _BV(REFS0);   // Vcc as Voltage Ref 
+    ADMUX &= TEMPPIN;     // Select temperature pin
     ADCSRA |= _BV(ADSC);  // Start conversion
     loop_until_bit_is_clear(ADCSRA, ADSC);
     //T = ((ADC/1024)*VRef - TEMP_OFFSET ) / -TEMP_GAIN
-    temp =  (TEMP_OFFSET*1024 - ADC*ADC_VREF) / TEMP_GAIN; 
+    temp =  (TEMP_OFFSET*1024 - ADC*ADC_VREF)/ (TEMP_GAIN*0.001024); 
     return (temp); 
 }
 
