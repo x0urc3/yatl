@@ -15,6 +15,8 @@ char TRACEbuff[40];
 #else
 
 #define TRACE_init ""
+#define TRACE(fmt, ...)
+
 
 #endif //DEBUG
 #endif //__DEBUG_H__

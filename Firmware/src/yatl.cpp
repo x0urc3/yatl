@@ -93,14 +93,14 @@ uint16_t getVcc100(void) {
 
 void setup() {
     initADC();
-
+/*
     pinMode(LEDPIN1, OUTPUT);
     pinMode(LEDPIN2, OUTPUT);
     pinMode(LEDPIN3, OUTPUT);
     pinMode(GATEPIN, OUTPUT);
     pinMode(TEMPPIN, INPUT);
     pinMode(SWITCHPIN, INPUT_PULLUP);
-
+*/
     TRACE_init;
     //Serial.begin(9600);
     //	mySerial.begin(9600);
@@ -115,3 +115,14 @@ void loop() {
     _delay_ms(1000);
 
 }
+
+#ifndef DEBUG
+int main(void) {
+    setup();
+    for (;;) {
+        loop();
+        //serial event here
+    }
+    return(0);
+}
+#endif
