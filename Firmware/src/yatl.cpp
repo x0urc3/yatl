@@ -64,6 +64,12 @@ uint16_t getTemp(void) {
     return (temp); 
 }
 
+/*
+ * BUG: getInternalTemp() does not work if another ADC is used
+ *          - reproduce: supply 3.3v to ADC0/ADC1 and read the value
+ *              while using getInternalTemp()
+ * 
+ */
 uint16_t getInternalTemp(void) { 
     uint16_t temp;
 
