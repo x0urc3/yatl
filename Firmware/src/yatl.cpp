@@ -9,7 +9,7 @@
  * - Switch pin should use AVR internal pullup
  * - Temperature sensor Vout connected 
  */
-#include <Arduino.h>
+#include "debug.h"
 #include <avr/io.h>
 #include <util/delay.h>
 
@@ -81,6 +81,7 @@ uint16_t getInternalTemp(void) {
     return (temp);           
 }
 
+
 void setup() {
     initADC();
 
@@ -91,15 +92,17 @@ void setup() {
     pinMode(TEMPPIN, INPUT);
     pinMode(SWITCHPIN, INPUT_PULLUP);
 
-    Serial.begin(9600);
+    TRACE_init;
+    //Serial.begin(9600);
     //	mySerial.begin(9600);
     //    OSCCAL=200;
 }
 
+
 void loop() {
-    char buff[20];
-    sprintf(buff, "Internal temp: %d", getInternalTemp());
-    Serial.println(buff);
+    TRACE("Internal temp: %d", getInternalTemp());
+    TRACE("test %d", 5);
+    Serial.println("test");
     _delay_ms(1000);
 
 }
