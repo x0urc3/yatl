@@ -40,11 +40,12 @@ static inline void initADC(void) {
     //ADC clock input 50-200kHz
     
 #ifdef ARDUINO_AVR_UNO
-    //Use UNO default
+    //UNO use 16Mhz external oscillator
+    ADCSRA |= (_BV(ADPS2) | _BV(ADPS1) | _BV(ADPS0)); // ADC clock prescaler /128
 #else
     ADCSRA |= (_BV(ADPS2)| _BV(ADPS1)); // ADC clock prescaler /64
-    //ADCSRA |= (_BV(ADPS2) | _BV(ADPS1) | _BV(ADPS0)); // ADC clock prescaler /128
 #endif 
+    ADCSRA |= _BV(ADEN);                // enable ADC
 }
 
 #define ADC_VREF    50     // Vcc = 5.06
@@ -54,7 +55,6 @@ static inline void initADC(void) {
 int16_t getTemp(void) { 
     uint16_t temp;
 
-    //ADCSRA |= _BV(ADEN);    // enable ADC
     ADMUX = _BV(REFS0);     // Vcc as Voltage Ref 
     ADMUX &= TEMPPIN;       // Select temperature pin
     ADCSRA |= _BV(ADSC);  // Start conversion
@@ -69,7 +69,6 @@ uint16_t getInternalTemp(void) {
 
     ADMUX = _BV(REFS1) | _BV(REFS0);    // Internal 1.1V Voltage Ref 
     ADMUX |= _BV(MUX3);                 // Select ADC8 i.e. Temp sensor
-    ADCSRA |= _BV(ADEN);                // enable ADC
     ADCSRA |= _BV(ADSC);                // Start conversion
     loop_until_bit_is_clear(ADCSRA, ADSC);
     temp = ITEMP_GAIN * (ADC - ITEMP_OFFSET);
