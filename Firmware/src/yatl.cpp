@@ -73,7 +73,7 @@ uint16_t getTemp(void) {
 uint16_t getInternalTemp(void) { 
     uint16_t temp;
 
-    ADMUX = _BV(REFS1) | _BV(REFS0);    // Internal 1.1V Voltage Ref 
+    ADMUX = _BV(REFS1) | _BV(REFS0);    // Internal 1.1V VRef
     ADMUX |= _BV(MUX3);                 // Select ADC8 i.e. Temp sensor
     ADCSRA |= _BV(ADSC);                // Start conversion
     loop_until_bit_is_clear(ADCSRA, ADSC);
@@ -81,6 +81,19 @@ uint16_t getInternalTemp(void) {
     return (temp);           
 }
 
+uint16_t getVcc100(void) {
+    uint16_t vcc;
+
+    ADMUX = _BV(REFS0);            // Vcc as Voltage Ref
+    ADMUX |= _BV(MUX3) | _BV(MUX2) |
+        _BV(MUX1);                 // Select internal 1.1V VRef
+    _delay_ms(1);                  // Settling time after changing ADMUX
+    ADCSRA |= _BV(ADSC);           // Start conversion
+    loop_until_bit_is_clear(ADCSRA, ADSC);
+    //vcc = 110 * 1024 / ADC;
+    vcc = 112640 / ADC;
+    return (vcc);
+}
 
 void setup() {
     initADC();
