@@ -52,7 +52,7 @@ static inline void initADC(void) {
 }
 
 
-uint16_t getTemp(void) { 
+uint16_t getTemp10(void) {
     uint16_t temp;
 
     ADMUX = _BV(REFS0);   // Vcc as Voltage Ref 
@@ -61,7 +61,7 @@ uint16_t getTemp(void) {
     ADCSRA |= _BV(ADSC);  // Start conversion
     loop_until_bit_is_clear(ADCSRA, ADSC);
     //T = ((ADC/1024)*VRef - TEMP_OFFSET ) / -TEMP_GAIN
-    temp =  (TEMP_OFFSET*1024 - ADC*ADC_VREF)/ (TEMP_GAIN*0.001024); 
+    temp =  (TEMP_OFFSET*1024 - ADC*ADC_VREF)/ (TEMP_GAIN*0.01024);
     return (temp); 
 }
 
