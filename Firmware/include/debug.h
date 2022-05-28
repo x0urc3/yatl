@@ -5,10 +5,11 @@
 
 #include <Arduino.h>
 #define TRACE_init Serial.begin(9600)
-char TRACEbuff[40];
+#define TRACEsize 40
+char TRACEbuff[TRACEsize];
 #define TRACE(fmt, ...)\
     do {    \
-        sprintf(TRACEbuff,"%s (%d): " fmt, __FUNCTION__, __LINE__, __VA_ARGS__); \
+        snprintf(TRACEbuff, TRACEsize, "%s (%d): " fmt, __FUNCTION__, __LINE__, __VA_ARGS__); \
         Serial.println(TRACEbuff); \
     } while (0)
 
