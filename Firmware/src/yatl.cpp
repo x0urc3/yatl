@@ -25,12 +25,11 @@
 // ARef (100nF Gnd)  ARef  |  20 |   ARef
 
 // pinout                   ATMega  | Phy  |  Uno
-#define LEDPIN1     1   //          |  x     |  x
-#define LEDPIN2     3   //          |  x     |  x
-#define LEDPIN3     4   //          |  x     |  x
-#define GATEPIN     0   //          |  x     |  x
-#define TEMPPIN     0xf0//  ADC0    |   23   |  A0
-#define SWITCHPIN   2   // x     |  x
+#define LEDPIN1     PB0   //          |  x     |  x
+#define LEDPIN2     PB1   //          |  x     |  x
+#define LEDPIN3     PB2   //          |  x     |  x
+#define SWITCHPIN   PD2   // x     |  x
+#define TEMPPIN     0xf0  // ADC0    |   23   |  A0
 
 #define ITEMP_GAIN	    1
 #define ITEMP_OFFSET    322     // Offset for 0deg Celcius	
