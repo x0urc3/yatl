@@ -9,7 +9,7 @@
  * - Switch pin should use AVR internal pullup
  * - Temperature sensor Vout connected 
  */
-#include <util.h>
+#include "avr_util.h"
 #include <avr/io.h>
 #include <util/delay.h>
 
