@@ -40,14 +40,20 @@
 
 uint16_t getTemp10(void) {
     uint16_t temp;
+    uint16_t adc_vref;
+    uint16_t adc;
 
     ADMUX = _BV(REFS0);   // Vcc as Voltage Ref 
     ADMUX &= TEMPPIN;     // Select temperature pin
-    _delay_ms(2);         // Settling time after changing ADMUX
+    _delay_ms(10);         // Settling time after changing ADMUX
     ADCSRA |= _BV(ADSC);  // Start conversion
     loop_until_bit_is_clear(ADCSRA, ADSC);
+    adc = ADC;
+    TRACE("ADC: %d\n", adc);
     //T = ((ADC/1024)*VRef - TEMP_OFFSET ) / -TEMP_GAIN
-    temp =  (TEMP_OFFSET*1024 - ADC*ADC_VREF)/ (TEMP_GAIN*0.01024);
+    //temp =  (TEMP_OFFSET*1024 - adc*ADC_VREF)/ (TEMP_GAIN*0.01024);
+    adc_vref =  getVcc100()/10;
+    temp =  (TEMP_OFFSET*1024 - adc*adc_vref) / (TEMP_GAIN*0.01024);
     return (temp); 
 }
 

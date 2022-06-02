@@ -37,7 +37,7 @@ uint16_t getVcc100(void) {
     ADMUX = _BV(REFS0);            // Vcc as Voltage Ref
     ADMUX |= _BV(MUX3) | _BV(MUX2) |
         _BV(MUX1);                 // Select internal 1.1V VRef
-    _delay_ms(2);                  // Settling time after changing ADMUX
+    _delay_ms(10);                  // Settling time after changing ADMUX
     ADCSRA |= _BV(ADSC);           // Start conversion
     loop_until_bit_is_clear(ADCSRA, ADSC);
     //vcc = 110 * 1024 / ADC;
