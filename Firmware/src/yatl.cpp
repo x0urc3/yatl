@@ -13,6 +13,7 @@
 #include "trace.h"
 #include "usart.h"
 #include <avr/io.h>
+#include <avr/eeprom.h>
 #include <util/delay.h>
 
 // Reserved pins    ATMega | Phy |  Uno
@@ -38,6 +39,25 @@
 #define TEMP_GAIN   1085  // LMT86: 10.85mV per Celcius 
 #define TEMP_OFFSET	21    // Offset for 0deg Celcius
 
+#define ROM_DIRTY 0x7a
+#define ROM_SIZE 500
+uint8_t EEMEM rom_dirty;
+uint16_t EEMEM rom_cnt;
+uint8_t EEMEM rom_data[ROM_SIZE];
+
+void initEEPROM(void) {
+    uint8_t tt;
+    tt = eeprom_read_byte(&rom_dirty);
+    if (tt != ROM_DIRTY) {
+        TRACE("Reset counter. DIRTY:%d\n",tt);
+        tt = eeprom_read_word(&rom_cnt);
+        if (tt != 0) {
+            TRACE("Reset counter. CNT:%d\n",tt);
+            eeprom_update_word(&rom_cnt,0);
+        }
+    }
+}
+
 uint16_t getTemp10(void) {
     uint16_t temp;
     uint16_t adc_vref;
@@ -59,6 +79,8 @@ uint16_t getTemp10(void) {
 
 void setup(void) {
     initADC();
+    initEEPROM();
+    TRACE_init;
 /*
     pinMode(LEDPIN1, OUTPUT);
     pinMode(LEDPIN2, OUTPUT);
