@@ -45,6 +45,14 @@ uint8_t EEMEM rom_dirty;
 uint16_t EEMEM rom_cnt;
 uint8_t EEMEM rom_data[ROM_SIZE];
 
+#define TIMEOUT_MS 2000
+#define resetCounterT1() (TCNT1 = 0)
+#define expiredCounterT1() ((TCNT1 > TIMEOUT_MS) ? 1 : 0)
+
+void initCounterT1(void) {
+    TCCR1B = _BV(CS12) | _BV(CS10); //1Mhz/1024 = 976Hz ~ 1000Hz
+}
+
 void initPin(void) {
     SWITCH_PORT |= _BV(SWITCH);      //Enable pullup
 }
@@ -104,6 +112,7 @@ void setup(void) {
     initADC();
     initEEPROM();
     initPin();
+    initCounterT1();
     TRACE_init;
 /*
     pinMode(LEDPIN1, OUTPUT);
@@ -135,16 +144,12 @@ void loop(void) {
     } else {
         switchClicked = 0;
     }
-    //Serial.println("test");
-    /*
-    if (usart_txReady()) {
-        usart_txByte(d);
+
+    if (expiredCounterT1()) {
+        TRACE("Change state. click:%d\n", click);
+        resetCounterT1();
+        click = 0;
     }
-    usart_rxWait();
-    d = usart_rxByte();
-    char aa[]="Ayam\n";
-    usart_txNByte(aa,5);
-    */
     //_delay_ms(1000);
 
 }
