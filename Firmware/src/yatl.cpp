@@ -129,38 +129,33 @@ void setup(void) {
     //initUSART();
 }
 
-uint8_t switchClicked = 0;
-uint8_t click = 0;
-void loop(void) {
 
-    //TRACE("Internal temp: %d", getInternalTemp());
-    //TRACE("test %d\n", 5);
-    if (debounce()) {
-        if (switchClicked == 0) {
-        click += 1;
-        switchClicked = 1;
-        TRACE("click:%d\n", click);
-        }
-    } else {
-        switchClicked = 0;
-    }
 
-    if (expiredCounterT1()) {
-        TRACE("Change state. click:%d\n", click);
-        resetCounterT1();
-        click = 0;
-    }
-    //_delay_ms(1000);
-
-}
-
-#ifndef Arduino_h
 int main(void) {
     setup();
     for (;;) {
-        loop();
-        //serial event here
+        uint8_t stateClicked = 0;
+        uint8_t clickCount = 0;
+
+        //TRACE("Internal temp: %d", getInternalTemp());
+        //TRACE("test %d\n", 5);
+        if (debounce()) {
+            if (stateClicked == 0) {
+                clickCount += 1;
+                stateClicked = 1;
+                TRACE("click:%d\n", clickCount);
+            }
+        } else {
+            stateClicked = 0;
+        }
+
+        if (expiredCounterT1()) {
+            TRACE("Change state. click:%d\n", clickCount);
+            resetCounterT1();
+            clickCount = 0;
+        }
+        //_delay_ms(1000);
+
     }
     return(0);
 }
-#endif
