@@ -113,7 +113,7 @@ void setup(void) {
     initEEPROM();
     initPin();
     initCounterT1();
-    TRACE_init;
+    TRACE_init();
 /*
     pinMode(LEDPIN1, OUTPUT);
     pinMode(LEDPIN2, OUTPUT);
