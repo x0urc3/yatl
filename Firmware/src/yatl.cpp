@@ -15,6 +15,7 @@
 #include <avr/io.h>
 #include <avr/eeprom.h>
 #include <util/delay.h>
+#include <avr/sleep.h>
 
 // Reserved pins    ATMega | Phy |  Uno
 // Reset             PC6   |  1  |   reset
@@ -75,6 +76,14 @@ uint16_t getTemp10(void) {
     adc_vref =  getVcc100()/10;
     temp =  (TEMP_OFFSET*1024 - adc*adc_vref) / (TEMP_GAIN*0.01024);
     return (temp); 
+}
+
+void doSleep() {
+ //cbi(ADCSRA,ADEN); // Switch Analog to Digital converter OFF
+
+ set_sleep_mode(SLEEP_MODE_PWR_DOWN); // Set sleep mode
+ sleep_mode(); // System sleeps here
+ //sbi(ADCSRA,ADEN);  // Switch Analog to Digital converter ON
 }
 
 void setup(void) {
