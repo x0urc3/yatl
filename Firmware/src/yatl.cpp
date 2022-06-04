@@ -1,14 +1,9 @@
 /* yatl.cpp Copyright (c) 2022 Khairulmizam Samsudin <xource@gmail.com
  *
  * Firmware for Yet Another Temperature Logger
- *
  * 
  */
 
-/* Design Notes
- * - Switch pin should use AVR internal pullup
- * - Temperature sensor Vout connected 
- */
 #include "adc.h"
 #include "trace.h"
 #include "usart.h"
@@ -28,13 +23,17 @@
 // RX                PD0   |  3  |   0
 // ARef (100nF Gnd)  ARef  |  20 |   ARef
 
-// pinout                   ATMega  | Phy  |  Uno
-#define LEDPIN1     PB0   //          |  x     |  x
-#define LEDPIN2     PB1   //          |  x     |  x
-#define LEDPIN3     PB2   //          |  x     |  x
-#define SWITCHPIN   PD2   // x     |  x
-#define TEMPPIN     0xf0  // ADC0    |   23   |  A0
-
+// pinout         ATMega    | Phy  |  Uno
+#define LED1        PB0   //       |  x     |  x
+#define LED2        PB1   //       |  x     |  x
+#define LED3        PB2   //       |  x     |  x
+#define LEDPIN      PINB
+#define LEDPORT     PORTB
+#define TEMPPIN     0xf0  //   23  |  A0
+#define SWITCH      PD2   //       |  x     |  x
+#define SWITCH_PIN  PIND
+#define SWITCH_PORT PORTD
+#define SWITCH_DEBOUNCE_TIME 100
 
 #define ADC_VREF    50    // Vcc = 5.06
 #define TEMP_GAIN   1085  // LMT86: 10.85mV per Celcius 
@@ -45,6 +44,10 @@
 uint8_t EEMEM rom_dirty;
 uint16_t EEMEM rom_cnt;
 uint8_t EEMEM rom_data[ROM_SIZE];
+
+void initPin(void) {
+    SWITCH_PORT |= _BV(SWITCH);      //Enable pullup
+}
 
 void initEEPROM(void) {
     uint8_t tt;
@@ -57,6 +60,17 @@ void initEEPROM(void) {
             eeprom_update_word(&rom_cnt,0);
         }
     }
+}
+
+uint8_t debounce(void) {
+    //    TRACE("switch:%d\n", SWITCH_PIN & _BV(SWITCH));
+    if (bit_is_clear(SWITCH_PIN, SWITCH)) {      // switch pressed
+        _delay_us(SWITCH_DEBOUNCE_TIME);
+        if (bit_is_clear(SWITCH_PIN, SWITCH)) {  // still pressed
+            return (1);
+        }
+    }
+    return 0;
 }
 
 uint16_t getTemp10(void) {
@@ -89,6 +103,7 @@ void doSleep() {
 void setup(void) {
     initADC();
     initEEPROM();
+    initPin();
     TRACE_init;
 /*
     pinMode(LEDPIN1, OUTPUT);
@@ -98,7 +113,6 @@ void setup(void) {
     pinMode(TEMPPIN, INPUT);
     pinMode(SWITCHPIN, INPUT_PULLUP);
 */
-    TRACE_init;
     //Serial.begin(9600);
     //	mySerial.begin(9600);
     //    OSCCAL=200;
@@ -106,10 +120,21 @@ void setup(void) {
     //initUSART();
 }
 
-uint8_t d = 'u';
+uint8_t switchClicked = 0;
+uint8_t click = 0;
 void loop(void) {
+
     //TRACE("Internal temp: %d", getInternalTemp());
-    TRACE("test %d\n", 5);
+    //TRACE("test %d\n", 5);
+    if (debounce()) {
+        if (switchClicked == 0) {
+        click += 1;
+        switchClicked = 1;
+        TRACE("click:%d\n", click);
+        }
+    } else {
+        switchClicked = 0;
+    }
     //Serial.println("test");
     /*
     if (usart_txReady()) {
@@ -120,7 +145,7 @@ void loop(void) {
     char aa[]="Ayam\n";
     usart_txNByte(aa,5);
     */
-    _delay_ms(1000);
+    //_delay_ms(1000);
 
 }
 
