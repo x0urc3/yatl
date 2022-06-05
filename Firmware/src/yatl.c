@@ -49,15 +49,15 @@ uint8_t EEMEM rom_data[ROM_SIZE];
 #define resetCounterT1() (TCNT1 = 0)
 #define expiredCounterT1() ((TCNT1 > TIMEOUT_MS) ? 1 : 0)
 
-void initCounterT1(void) {
+static void initCounterT1(void) {
     TCCR1B = _BV(CS12) | _BV(CS10); //1Mhz/1024 = 976Hz ~ 1000Hz
 }
 
-void initPin(void) {
-    SWITCH_PORT |= _BV(SWITCH);      //Enable pullup
+static void initPin(void) {
+    SWITCH_PORT |= _BV(SWITCH);     //Enable pullup
 }
 
-void initEEPROM(void) {
+static void initEEPROM(void) {
     uint8_t tt;
     tt = eeprom_read_byte(&rom_dirty);
     if (tt != ROM_DIRTY) {
@@ -70,7 +70,7 @@ void initEEPROM(void) {
     }
 }
 
-uint8_t debounce(void) {
+static uint8_t debounce(void) {
     //    TRACE("switch:%d\n", SWITCH_PIN & _BV(SWITCH));
     if (bit_is_clear(SWITCH_PIN, SWITCH)) {      // switch pressed
         _delay_us(SWITCH_DEBOUNCE_TIME);
@@ -81,14 +81,14 @@ uint8_t debounce(void) {
     return 0;
 }
 
-uint16_t getTemp10(void) {
+static uint16_t getTemp10(void) {
     uint16_t temp;
     uint16_t adc_vref;
     uint16_t adc;
 
     ADMUX = _BV(REFS0);   // Vcc as Voltage Ref 
     ADMUX &= TEMPPIN;     // Select temperature pin
-    _delay_ms(10);         // Settling time after changing ADMUX
+    _delay_ms(10);        // Settling time after changing ADMUX
     ADCSRA |= _BV(ADSC);  // Start conversion
     loop_until_bit_is_clear(ADCSRA, ADSC);
     adc = ADC;
@@ -100,7 +100,7 @@ uint16_t getTemp10(void) {
     return (temp); 
 }
 
-void doSleep() {
+static void doSleep() {
  //cbi(ADCSRA,ADEN); // Switch Analog to Digital converter OFF
 
  set_sleep_mode(SLEEP_MODE_PWR_DOWN); // Set sleep mode
@@ -108,25 +108,12 @@ void doSleep() {
  //sbi(ADCSRA,ADEN);  // Switch Analog to Digital converter ON
 }
 
-void setup(void) {
+static void setup(void) {
     initADC();
     initEEPROM();
     initPin();
     initCounterT1();
     TRACE_init();
-/*
-    pinMode(LEDPIN1, OUTPUT);
-    pinMode(LEDPIN2, OUTPUT);
-    pinMode(LEDPIN3, OUTPUT);
-    pinMode(GATEPIN, OUTPUT);
-    pinMode(TEMPPIN, INPUT);
-    pinMode(SWITCHPIN, INPUT_PULLUP);
-*/
-    //Serial.begin(9600);
-    //	mySerial.begin(9600);
-    //    OSCCAL=200;
-
-    //initUSART();
 }
 
 

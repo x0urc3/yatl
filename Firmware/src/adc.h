@@ -7,7 +7,7 @@
 #define ITEMP_OFFSET    322     // Offset for 0deg Celcius	
 #define ITEMP_SCALE     1       // AVR temp sensor: 1LSB per celcius    
 
-void initADC(void) {
+static void initADC(void) {
     //ADC clock input 50-200kHz
     
 #ifdef ARDUINO_AVR_UNO
@@ -19,7 +19,7 @@ void initADC(void) {
     ADCSRA |= _BV(ADEN);                // enable ADC
 }
 
-uint16_t getInternalTemp(void) { 
+static uint16_t getInternalTemp(void) { 
     uint16_t temp;
 
     ADMUX = _BV(REFS1) | _BV(REFS0);    // Internal 1.1V VRef
@@ -31,7 +31,7 @@ uint16_t getInternalTemp(void) {
     return (temp);           
 }
 
-uint16_t getVcc100(void) {
+static uint16_t getVcc100(void) {
     uint16_t vcc;
 
     ADMUX = _BV(REFS0);            // Vcc as Voltage Ref

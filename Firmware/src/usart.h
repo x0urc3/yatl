@@ -17,7 +17,7 @@
 #define usart_txByte(data)    (UDR0 = data)
 #define usart_rxByte()        (UDR0)
 
-void initUSART(void) {
+static void initUSART(void) {
   UBRR0H = UBRRH_VALUE;         // defined in setbaud.h & requires BAUD
   UBRR0L = UBRRL_VALUE;
 #if USE_2X
@@ -30,7 +30,7 @@ void initUSART(void) {
   UCSR0C = _BV(UCSZ01) | _BV(UCSZ00);   // 8 data bits, 1 stop bit
 }
 
-void usart_txString(char data[]) {
+static void usart_txString(char data[]) {
   uint8_t i = 0;
   while (data[i]) {
       usart_txWait();
@@ -39,7 +39,7 @@ void usart_txString(char data[]) {
   }
 }
 
-void usart_txNByte(char data[], int n) {
+static void usart_txNByte(char data[], int n) {
   uint8_t i = 0;
   do {
       usart_txWait();
