@@ -61,17 +61,17 @@ static void initEEPROM(void) {
     uint8_t tt;
     tt = eeprom_read_byte(&rom_dirty);
     if (tt != ROM_DIRTY) {
-        TRACE("Reset counter. DIRTY:%d\n",tt);
+        TRACE(1, "Reset counter. DIRTY:%d\n",tt);
         tt = eeprom_read_word(&rom_cnt);
         if (tt != 0) {
-            TRACE("Reset counter. CNT:%d\n",tt);
+            TRACE(1, "Reset counter. CNT:%d\n",tt);
             eeprom_update_word(&rom_cnt,0);
         }
     }
 }
 
 static uint8_t debounce(void) {
-    //    TRACE("switch:%d\n", SWITCH_PIN & _BV(SWITCH));
+    //    TRACE(3,"switch:%d\n", SWITCH_PIN & _BV(SWITCH));
     if (bit_is_clear(SWITCH_PIN, SWITCH)) {      // switch pressed
         _delay_us(SWITCH_DEBOUNCE_TIME);
         if (bit_is_clear(SWITCH_PIN, SWITCH)) {  // still pressed
@@ -92,7 +92,7 @@ static uint16_t getTemp10(void) {
     ADCSRA |= _BV(ADSC);  // Start conversion
     loop_until_bit_is_clear(ADCSRA, ADSC);
     adc = ADC;
-    TRACE("ADC: %d\n", adc);
+    //TRACE(3,"ADC: %d\n", adc);
     //T = ((ADC/1024)*VRef - TEMP_OFFSET ) / -TEMP_GAIN
     //temp =  (TEMP_OFFSET*1024 - adc*ADC_VREF)/ (TEMP_GAIN*0.01024);
     adc_vref =  getVcc100()/10;
@@ -130,14 +130,14 @@ int main(void) {
             if (stateClicked == 0) {
                 clickCount += 1;
                 stateClicked = 1;
-                TRACE("click:%d\n", clickCount);
+                TRACE(1,"click:%d\n", clickCount);
             }
         } else {
             stateClicked = 0;
         }
 
         if (expiredCounterT1()) {
-            TRACE("Change state. click:%d\n", clickCount);
+            TRACE(1,"Change state. click:%d\n", clickCount);
             resetCounterT1();
             clickCount = 0;
         }
