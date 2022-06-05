@@ -15,7 +15,7 @@
 char TRACEbuff[TRACEsize];
 #define TRACE(verbose,fmt, ...)\
     do {    \
-        if (TRACEVERBOSE == verbose) { \
+        if (verbose <= TRACEVERBOSE) { \
             snprintf(TRACEbuff, TRACEsize, "%s (%d): " fmt, __FUNCTION__, __LINE__, __VA_ARGS__); \
             usart_txString(TRACEbuff); \
         } \
