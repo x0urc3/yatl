@@ -52,9 +52,9 @@ uint8_t EEMEM romData[ROM_SIZE];
 #define resetCounterT1() (TCNT1 = 0)
 #define expiredCounterT1() ((TCNT1 > TIMEOUT_MS) ? 1 : 0)
 
-#define PCINT 1
-#define WDTINT 2
-volatile uint8_t g_interruptStatus;
+#define INT_PC   (_BV(0))
+#define INT_WDT  (_BV(1))
+volatile uint8_t g_flagWDT = 0;
 
 enum {sleep, battery, storage, logging} state;
 #define SLEEP     0
@@ -72,8 +72,18 @@ static void initInterrupt(void) {
   PCMSK2 |= (1 << PCINT18);     // Set mask to for PD2/PCINT18
 }
 
-ISR(PCINT2_vect) {
-    g_interruptStatus = PCINT;
+void initWDT() {
+//    MCUSR &= ~_BV(WDRF);   //reset WDT flag
+    WDTCSR = _BV(WDCE);
+    WDTCSR |= _BV(WDP3) | _BV(WDP0);    //~8s timeout
+}
+#define startWDT()  (WDTCSR |= _BV(WDIE)
+#define stopWDT()   (WDTCSR &= ~_BV(WDIE)
+
+EMPTY_INTERRUPT(PCINT2_vect);
+
+ISR(WDT_vect) {
+    g_flagWDT = 1;
 }
 
 static void initCounterT1(void) {
@@ -141,6 +151,7 @@ static void setup(void) {
     initPin();
     initCounterT1();
     initInterrupt();
+    initWDT();
 }
 
 
@@ -157,6 +168,7 @@ int main(void) {
         //TRACE("Internal temp: %d", getInternalTemp());
         //TRACE("test %d\n", 5);
         if (debounce()) {
+//        if (debounce() && !(g_flagWDT)) {
             if (switchClicked == 0) {
                 clickCount = (clickCount+1) % STATEMAX; //rollover counter
                 if (clickCount == 0) {
