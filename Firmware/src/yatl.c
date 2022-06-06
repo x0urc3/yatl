@@ -11,6 +11,7 @@
 #include <avr/eeprom.h>
 #include <util/delay.h>
 #include <avr/sleep.h>
+#include <avr/interrupt.h>
 
 // Reserved pins    ATMega | Phy |  Uno
 // Reset             PC6   |  1  |   reset
@@ -45,9 +46,24 @@ uint8_t EEMEM rom_dirty;
 uint16_t EEMEM rom_cnt;
 uint8_t EEMEM rom_data[ROM_SIZE];
 
-#define TIMEOUT_MS 2000
+#define TIMEOUT_MS 5000
 #define resetCounterT1() (TCNT1 = 0)
 #define expiredCounterT1() ((TCNT1 > TIMEOUT_MS) ? 1 : 0)
+
+#define PCINT 1
+#define WDTINT 2
+volatile uint8_t g_interruptStatus;
+
+#define STATE_SLEEP 0
+
+static void initInterrupt(void) {
+  PCICR |= (1 << PCIE2);        // Set pin-change interrupt for D pins
+  PCMSK2 |= (1 << PCINT18);     // Set mask to for PD2/PCINT18
+}
+
+ISR(PCINT2_vect) {
+    g_interruptStatus = PCINT;
+}
 
 static void initCounterT1(void) {
     TCCR1B = _BV(CS12) | _BV(CS10); //1Mhz/1024 = 976Hz ~ 1000Hz
@@ -101,11 +117,14 @@ static uint16_t getTemp10(void) {
 }
 
 static void doSleep() {
- //cbi(ADCSRA,ADEN); // Switch Analog to Digital converter OFF
+    ADCSRA &= ~_BV(ADEN);               // Disable ADC
 
- set_sleep_mode(SLEEP_MODE_PWR_DOWN); // Set sleep mode
- sleep_mode(); // System sleeps here
- //sbi(ADCSRA,ADEN);  // Switch Analog to Digital converter ON
+    set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+    sei();
+    sleep_mode();
+    cli();
+
+    ADCSRA |= _BV(ADEN);                // Enable ADC
 }
 
 static void setup(void) {
@@ -113,6 +132,7 @@ static void setup(void) {
     initEEPROM();
     initPin();
     initCounterT1();
+    initInterrupt();
     TRACE_init();
 }
 
@@ -142,6 +162,12 @@ int main(void) {
             resetCounterT1();
             currentState = clickCount;
             clickCount = 0;
+            if (currentState == STATE_SLEEP) {
+                TRACE(1,"Going to sleep. state:%d\n", currentState);
+                doSleep();
+                TRACE(1,"Wakeup from sleep. state:%d\n", currentState);
+//                _delay_ms(1000);
+            }
         }
 
     }
