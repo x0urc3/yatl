@@ -1,7 +1,7 @@
 /* yatl.cpp Copyright (c) 2022 Khairulmizam Samsudin <xource@gmail.com
  *
  * Firmware for Yet Another Temperature Logger
- * 
+ *
  */
 
 #include "adc.h"
@@ -36,7 +36,7 @@
 #define SWITCH_DEBOUNCE_TIME 100
 
 #define ADC_VREF    50    // Vcc = 5.06
-#define TEMP_GAIN   1085  // LMT86: 10.85mV per Celcius 
+#define TEMP_GAIN   1085  // LMT86: 10.85mV per Celcius
 #define TEMP_OFFSET	21    // Offset for 0deg Celcius
 
 #define ROM_DIRTY 0x7a
@@ -54,7 +54,7 @@ static void initCounterT1(void) {
 }
 
 static void initPin(void) {
-    SWITCH_PORT |= _BV(SWITCH);     //Enable pullup
+    SWITCH_PORT |= _BV(SWITCH);     //Enable pullup for switch
 }
 
 static void initEEPROM(void) {
@@ -86,7 +86,7 @@ static uint16_t getTemp10(void) {
     uint16_t adc_vref;
     uint16_t adc;
 
-    ADMUX = _BV(REFS0);   // Vcc as Voltage Ref 
+    ADMUX = _BV(REFS0);   // Vcc as Voltage Ref
     ADMUX &= TEMPPIN;     // Select temperature pin
     _delay_ms(10);        // Settling time after changing ADMUX
     ADCSRA |= _BV(ADSC);  // Start conversion
@@ -97,7 +97,7 @@ static uint16_t getTemp10(void) {
     //temp =  (TEMP_OFFSET*1024 - adc*ADC_VREF)/ (TEMP_GAIN*0.01024);
     adc_vref =  getVcc100()/10;
     temp =  (TEMP_OFFSET*1024 - adc*adc_vref) / (TEMP_GAIN*0.01024);
-    return (temp); 
+    return (temp);
 }
 
 static void doSleep() {
@@ -120,28 +120,29 @@ static void setup(void) {
 
 int main(void) {
     setup();
-    for (;;) {
-        uint8_t stateClicked = 0;
-        uint8_t clickCount = 0;
 
+    uint8_t switchClicked = 0;
+    uint8_t clickCount = 0;
+    uint8_t currentState = 0;
+    for (;;) {
         //TRACE("Internal temp: %d", getInternalTemp());
         //TRACE("test %d\n", 5);
         if (debounce()) {
-            if (stateClicked == 0) {
+            if (switchClicked == 0) {
                 clickCount += 1;
-                stateClicked = 1;
+                switchClicked = 1;
                 TRACE(1,"click:%d\n", clickCount);
             }
         } else {
-            stateClicked = 0;
+            switchClicked = 0;
         }
 
         if (expiredCounterT1()) {
             TRACE(1,"Change state. click:%d\n", clickCount);
             resetCounterT1();
+            currentState = clickCount;
             clickCount = 0;
         }
-        //_delay_ms(1000);
 
     }
     return(0);
