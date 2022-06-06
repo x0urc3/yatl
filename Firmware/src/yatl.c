@@ -42,9 +42,11 @@
 
 #define ROM_DIRTY 0x7a
 #define ROM_SIZE 500
-uint8_t EEMEM rom_dirty;
-uint16_t EEMEM rom_cnt;
-uint8_t EEMEM rom_data[ROM_SIZE];
+uint8_t EEMEM romDirty;
+uint16_t EEMEM romCnt;
+uint8_t EEMEM romData[ROM_SIZE];
+
+
 
 #define TIMEOUT_MS 5000
 #define resetCounterT1() (TCNT1 = 0)
@@ -79,13 +81,13 @@ static void initPin(void) {
 
 static void initEEPROM(void) {
     uint8_t tt;
-    tt = eeprom_read_byte(&rom_dirty);
+    tt = eeprom_read_byte(&romDirty);
     if (tt != ROM_DIRTY) {
         TRACE(1, "Reset counter. DIRTY:%d\n",tt);
-        tt = eeprom_read_word(&rom_cnt);
+        tt = eeprom_read_word(&romCnt);
         if (tt != 0) {
             TRACE(1, "Reset counter. CNT:%d\n",tt);
-            eeprom_update_word(&rom_cnt,0);
+            eeprom_update_word(&romCnt,0);
         }
     }
 }
