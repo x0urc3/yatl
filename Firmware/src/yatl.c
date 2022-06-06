@@ -117,14 +117,10 @@ static uint16_t getTemp10(void) {
 }
 
 static void doSleep() {
-    ADCSRA &= ~_BV(ADEN);               // Disable ADC
-
     set_sleep_mode(SLEEP_MODE_PWR_DOWN);
     sei();
     sleep_mode();
     cli();
-
-    ADCSRA |= _BV(ADEN);                // Enable ADC
 }
 
 static void setup(void) {
