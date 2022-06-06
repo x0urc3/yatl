@@ -140,12 +140,12 @@ static void setup(void) {
     initPin();
     initCounterT1();
     initInterrupt();
-    TRACE_init();
 }
 
 
 
 int main(void) {
+    TRACE_init();
     setup();
 
     uint8_t switchClicked = 0;
