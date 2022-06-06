@@ -56,6 +56,7 @@ uint8_t EEMEM romData[ROM_SIZE];
 #define WDTINT 2
 volatile uint8_t g_interruptStatus;
 
+enum {sleep, battery, storage, logging} state;
 #define SLEEP     0
 #define BATTERY   1
 #define STORAGE   2
@@ -150,7 +151,7 @@ int main(void) {
 
     uint8_t switchClicked = 0;
     uint8_t clickCount = SLEEP;
-    uint8_t currentState = STATE_SLEEP;  //Use to track ONE or MORE state
+    uint8_t logState = 0;
     uint8_t state;
 
     for (;;) {
@@ -169,32 +170,36 @@ int main(void) {
             switchClicked = 0;
         }
 
-        if (expiredCounterT1()) {
-
-            state = _BV(clickCount);
+        if (expiredCounterT1() && (clickCount != SLEEP)) {
             TRACE(1,"Timeout. click:%d\n", clickCount);
-            TRACE(1,"Timeout. currentState:%d\n", currentState);
-            clickCount = 0;
 
-            if (state & STATE_BATTERY) {
+            if (clickCount == battery) {
                 TRACE(1,"Show battery. VCC10:%d\n", getVcc100()/10);
             }
-            if (state & STATE_STORAGE) {
+            if (clickCount == storage) {
                 uint16_t counter = eeprom_read_word(&romCnt);
                 TRACE(1,"Show storage. romCnt:%d\n", counter);
             }
-            if (state & STATE_LOGGING) {
-                currentState ^= STATE_LOGGING;      // toggle state
-                TRACE(1,"Logging. state:%d\n", currentState);
-            }
-            if (state & STATE_SLEEP) {
-                TRACE(1,"Going to sleep. state:%d\n", currentState);
-                doSleep();
-                TRACE(1,"Wakeup from sleep. state:%d\n", currentState);
+            if (clickCount == logging) {
+                if (!logState) {
+                    logState = 1;
+                } else {
+                    logState = 0;
+                }
+                TRACE(1,"logstate:%d\n", logState);
             }
 
+            clickCount = 0;
             resetCounterT1();
         }
+
+        if (logState) {
+            TRACE(1,"Do logging. temp:%d\n", getTemp10());
+        }
+
+        TRACE(1,"Going to sleep. logState:%d\n", logState);
+        doSleep();
+        TRACE(1,"Wakeup from sleep. logState:%d\n", logState);
 
     }
     return(0);
