@@ -40,7 +40,7 @@
 #define TEMP_GAIN   1085  // LMT86: 10.85mV per Celcius
 #define TEMP_OFFSET	21    // Offset for 0deg Celcius
 
-#define ROM_DIRTY 0x7a
+#define ROM_DIRTYFLAG 0x7a
 #define ROM_SIZE 500
 uint8_t EEMEM romDirty;
 uint16_t EEMEM romCnt;
@@ -84,13 +84,14 @@ static void initPin(void) {
 }
 
 static void initEEPROM(void) {
-    uint8_t tt;
-    tt = eeprom_read_byte(&romDirty);
-    if (tt != ROM_DIRTY) {
-        TRACE(1, "Reset counter. DIRTY:%d\n",tt);
-        tt = eeprom_read_word(&romCnt);
-        if (tt != 0) {
-            TRACE(1, "Reset counter. CNT:%d\n",tt);
+    uint8_t flag;
+    uint16_t counter;
+    flag = eeprom_read_byte(&romDirty);
+    if (flag != ROM_DIRTYFLAG) {
+        TRACE(1, "Reset counter. DIRTY:%d\n",flag);
+        counter = eeprom_read_word(&romCnt);
+        if (counter != 0) {
+            TRACE(1, "Reset counter. CNT:%d\n",counter);
             eeprom_update_word(&romCnt,0);
         }
     }
@@ -176,7 +177,8 @@ int main(void) {
                 currentState &= ~STATE_BATTERY;
             }
             if (currentState & STATE_STORAGE) {
-                TRACE(1,"Show storage. romCnt:%d\n", romCnt);
+                uint16_t counter = eeprom_read_word(&romCnt);
+                TRACE(1,"Show storage. romCnt:%d\n", counter);
                 currentState &= ~STATE_STORAGE;
             }
             if (currentState & STATE_LOGGING) {
