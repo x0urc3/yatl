@@ -151,6 +151,7 @@ int main(void) {
     uint8_t switchClicked = 0;
     uint8_t clickCount = SLEEP;
     uint8_t currentState = STATE_SLEEP;  //Use to track ONE or MORE state
+    uint8_t state;
 
     for (;;) {
         //TRACE("Internal temp: %d", getInternalTemp());
@@ -169,30 +170,30 @@ int main(void) {
         }
 
         if (expiredCounterT1()) {
-            resetCounterT1();
-            currentState |= (clickCount > STATEMAX) ? _BV(STATEMAX) : _BV(clickCount);
+
+            state = _BV(clickCount);
             TRACE(1,"Timeout. click:%d\n", clickCount);
             TRACE(1,"Timeout. currentState:%d\n", currentState);
             clickCount = 0;
 
-            if (currentState & STATE_BATTERY) {
+            if (state & STATE_BATTERY) {
                 TRACE(1,"Show battery. VCC10:%d\n", getVcc100()/10);
-                currentState &= ~STATE_BATTERY;
             }
-            if (currentState & STATE_STORAGE) {
+            if (state & STATE_STORAGE) {
                 uint16_t counter = eeprom_read_word(&romCnt);
                 TRACE(1,"Show storage. romCnt:%d\n", counter);
-                currentState &= ~STATE_STORAGE;
             }
-            if (currentState & STATE_LOGGING) {
-                TRACE(1,"Do logging. state:%d\n", currentState);
+            if (state & STATE_LOGGING) {
+                currentState ^= STATE_LOGGING;      // toggle state
+                TRACE(1,"Logging. state:%d\n", currentState);
             }
-            if (currentState & STATE_SLEEP) {
+            if (state & STATE_SLEEP) {
                 TRACE(1,"Going to sleep. state:%d\n", currentState);
                 doSleep();
                 TRACE(1,"Wakeup from sleep. state:%d\n", currentState);
-//                _delay_ms(1000);
             }
+
+            resetCounterT1();
         }
 
     }
