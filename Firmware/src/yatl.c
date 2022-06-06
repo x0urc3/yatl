@@ -157,9 +157,12 @@ int main(void) {
         //TRACE("test %d\n", 5);
         if (debounce()) {
             if (switchClicked == 0) {
-                clickCount += 1;
+                clickCount = (clickCount+1) % STATEMAX; //rollover counter
+                if (clickCount == 0) {
+                    resetCounterT1();
+                }
                 switchClicked = 1;
-                TRACE(3,"click:%d\n", clickCount);
+                TRACE(1,"click:%d\n", clickCount);
             }
         } else {
             switchClicked = 0;
