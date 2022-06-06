@@ -38,3 +38,4 @@ fp-info-cache
 ref/
 out/
 tags
+.vimrc.custom
