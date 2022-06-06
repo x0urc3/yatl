@@ -54,7 +54,11 @@ uint8_t EEMEM rom_data[ROM_SIZE];
 #define WDTINT 2
 volatile uint8_t g_interruptStatus;
 
-#define STATE_SLEEP 0
+#define STATE_SLEEP     0
+#define STATE_BATTERY   1
+#define STATE_STORAGE   2
+#define STATE_LOGGING   3
+#define STATEMAX        STATE_LOGGING
 
 static void initInterrupt(void) {
   PCICR |= (1 << PCIE2);        // Set pin-change interrupt for D pins
@@ -156,13 +160,16 @@ int main(void) {
         if (expiredCounterT1()) {
             TRACE(1,"Change state. click:%d\n", clickCount);
             resetCounterT1();
-            currentState = clickCount;
+            currentState = (clickCount > STATEMAX) ? STATEMAX : clickCount;
             clickCount = 0;
             if (currentState == STATE_SLEEP) {
                 TRACE(1,"Going to sleep. state:%d\n", currentState);
                 doSleep();
                 TRACE(1,"Wakeup from sleep. state:%d\n", currentState);
 //                _delay_ms(1000);
+            }
+            if (currentState == STATE_LOGGING) {
+                TRACE(1,"Do logging. state:%d\n", currentState);
             }
         }
 
