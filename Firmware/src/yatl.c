@@ -56,11 +56,15 @@ uint8_t EEMEM romData[ROM_SIZE];
 #define WDTINT 2
 volatile uint8_t g_interruptStatus;
 
-#define STATE_SLEEP     0
-#define STATE_BATTERY   1
-#define STATE_STORAGE   2
-#define STATE_LOGGING   3
-#define STATEMAX        STATE_LOGGING
+#define SLEEP     0
+#define BATTERY   1
+#define STORAGE   2
+#define LOGGING   3
+#define STATE_SLEEP     (_BV(SLEEP))
+#define STATE_BATTERY   (_BV(BATTERY))
+#define STATE_STORAGE   (_BV(STORAGE))
+#define STATE_LOGGING   (_BV(LOGGING))
+#define STATEMAX        4
 
 static void initInterrupt(void) {
   PCICR |= (1 << PCIE2);        // Set pin-change interrupt for D pins
@@ -144,8 +148,9 @@ int main(void) {
     setup();
 
     uint8_t switchClicked = 0;
-    uint8_t clickCount = 0;
-    uint8_t currentState = 0;
+    uint8_t clickCount = SLEEP;
+    uint8_t currentState = STATE_SLEEP;  //Use to track ONE or MORE state
+
     for (;;) {
         //TRACE("Internal temp: %d", getInternalTemp());
         //TRACE("test %d\n", 5);
@@ -153,25 +158,35 @@ int main(void) {
             if (switchClicked == 0) {
                 clickCount += 1;
                 switchClicked = 1;
-                TRACE(1,"click:%d\n", clickCount);
+                TRACE(3,"click:%d\n", clickCount);
             }
         } else {
             switchClicked = 0;
         }
 
         if (expiredCounterT1()) {
-            TRACE(1,"Change state. click:%d\n", clickCount);
             resetCounterT1();
-            currentState = (clickCount > STATEMAX) ? STATEMAX : clickCount;
+            currentState |= (clickCount > STATEMAX) ? _BV(STATEMAX) : _BV(clickCount);
+            TRACE(1,"Timeout. click:%d\n", clickCount);
+            TRACE(1,"Timeout. currentState:%d\n", currentState);
             clickCount = 0;
-            if (currentState == STATE_SLEEP) {
+
+            if (currentState & STATE_BATTERY) {
+                TRACE(1,"Show battery. VCC10:%d\n", getVcc100()/10);
+                currentState &= ~STATE_BATTERY;
+            }
+            if (currentState & STATE_STORAGE) {
+                TRACE(1,"Show storage. romCnt:%d\n", romCnt);
+                currentState &= ~STATE_STORAGE;
+            }
+            if (currentState & STATE_LOGGING) {
+                TRACE(1,"Do logging. state:%d\n", currentState);
+            }
+            if (currentState & STATE_SLEEP) {
                 TRACE(1,"Going to sleep. state:%d\n", currentState);
                 doSleep();
                 TRACE(1,"Wakeup from sleep. state:%d\n", currentState);
 //                _delay_ms(1000);
-            }
-            if (currentState == STATE_LOGGING) {
-                TRACE(1,"Do logging. state:%d\n", currentState);
             }
         }
 
