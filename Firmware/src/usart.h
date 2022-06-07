@@ -1,14 +1,14 @@
 /*
  * usart.h - Functions to initialize, send, receive over USART
  */
-#ifndef __USART_H__
-#define __USART_H__
+#ifndef USART_H__
+#define USART_H__
 
 #include <avr/io.h>
-#ifndef BAUD                          
-#define BAUD  9600   //Set a safe default baud rate
+#ifndef BAUD
+#define BAUD  9600              // Set a safe default baud rate
 #endif
-#include <util/setbaud.h>     //Calculate bit-clock multiplier based on BAUD and F_CPU
+#include <util/setbaud.h>
 
 #define usart_txReady()       (bit_is_set(UCSR0A, UDRE0))
 #define usart_rxReady()       (bit_is_set(UCSR0A, RXC0))
@@ -26,7 +26,7 @@ static void initUSART(void) {
   UCSR0A &= ~_BV(U2X0);
 #endif
 
-  UCSR0B = _BV(TXEN0) | _BV(RXEN0);     //Enable USART transmitter/receiver
+  UCSR0B = _BV(TXEN0) | _BV(RXEN0);     // Enable USART transmitter/receiver
   UCSR0C = _BV(UCSZ01) | _BV(UCSZ00);   // 8 data bits, 1 stop bit
 }
 
@@ -48,4 +48,4 @@ static void usart_txNByte(char data[], int n) {
   } while (i < n);
 }
 
-#endif // __USART_H__
+#endif  // USART_H__

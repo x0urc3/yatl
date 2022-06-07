@@ -4,14 +4,13 @@
  *
  */
 
-#include "adc.h"
 #include "trace.h"
-#include "usart.h"
+#include "adc.h"
+#include "interrupt.h"
+#include "eeprom.h"
 #include <avr/io.h>
-#include <avr/eeprom.h>
 #include <util/delay.h>
 #include <avr/sleep.h>
-#include <avr/interrupt.h>
 
 // Reserved pins    ATMega | Phy |  Uno
 // Reset             PC6   |  1  |   reset
@@ -36,76 +35,23 @@
 #define SWITCH_PORT PORTD
 #define SWITCH_DEBOUNCE_TIME 100
 
-#define ADC_VREF    50    // Vcc = 5.06
-#define TEMP_GAIN   1085  // LMT86: 10.85mV per Celcius
-#define TEMP_OFFSET	21    // Offset for 0deg Celcius
-
-#define ROM_DIRTYFLAG 0x7a
-#define ROM_SIZE 500
-uint8_t EEMEM romDirty;
-uint16_t EEMEM romCnt;
-uint8_t EEMEM romData[ROM_SIZE];
-
-
-
-#define TIMEOUT_MS 5000
-#define resetCounterT1() (TCNT1 = 0)
-#define expiredCounterT1() ((TCNT1 > TIMEOUT_MS) ? 1 : 0)
-
-#define INT_PC   (_BV(0))
-#define INT_WDT  (_BV(1))
-volatile uint8_t g_flagWDT = 0;
+#define ADC_VREF    50      // Vcc = 5.06
+#define TEMP_GAIN   1085    // LMT86: 10.85mV per Celcius
+#define TEMP_OFFSET 21      // Offset for 0deg Celcius
 
 enum {sleep, battery, storage, logging} state;
-#define SLEEP     0
-#define BATTERY   1
-#define STORAGE   2
-#define LOGGING   3
-#define STATE_SLEEP     (_BV(SLEEP))
-#define STATE_BATTERY   (_BV(BATTERY))
-#define STATE_STORAGE   (_BV(STORAGE))
-#define STATE_LOGGING   (_BV(LOGGING))
-#define STATEMAX        4
+#define STATEMAX 4
 
-static void initInterrupt(void) {
-  PCICR |= (1 << PCIE2);        // Set pin-change interrupt for D pins
-  PCMSK2 |= (1 << PCINT18);     // Set mask to for PD2/PCINT18
-}
-
-void initWDT() {
-//    MCUSR &= ~_BV(WDRF);   //reset WDT flag
-    WDTCSR = _BV(WDCE);
-    WDTCSR |= _BV(WDP3) | _BV(WDP0);    //~8s timeout
-}
-#define startWDT()  (WDTCSR |= _BV(WDIE))
-#define stopWDT()   (WDTCSR &= ~_BV(WDIE))
-
-EMPTY_INTERRUPT(PCINT2_vect);
-
-ISR(WDT_vect) {
-    g_flagWDT = 1;
-}
+#define TIMEOUTT1_MS 5000
+#define resetCounterT1() (TCNT1 = 0)
+#define expiredCounterT1() ((TCNT1 > TIMEOUTT1_MS) ? 1 : 0)
 
 static void initCounterT1(void) {
-    TCCR1B = _BV(CS12) | _BV(CS10); //1Mhz/1024 = 976Hz ~ 1000Hz
+    TCCR1B = _BV(CS12) | _BV(CS10);     // 1Mhz/1024 = 976Hz ~ 1000Hz
 }
 
 static void initPin(void) {
-    SWITCH_PORT |= _BV(SWITCH);     //Enable pullup for switch
-}
-
-static void initEEPROM(void) {
-    uint8_t flag;
-    uint16_t counter;
-    flag = eeprom_read_byte(&romDirty);
-    if (flag != ROM_DIRTYFLAG) {
-        TRACE(1, "Reset counter. DIRTY:%d\n",flag);
-        counter = eeprom_read_word(&romCnt);
-        if (counter != 0) {
-            TRACE(1, "Reset counter. CNT:%d\n",counter);
-            eeprom_update_word(&romCnt,0);
-        }
-    }
+    SWITCH_PORT |= _BV(SWITCH);         // Enable pullup for switch
 }
 
 static uint8_t debounce(void) {
@@ -130,9 +76,9 @@ static uint16_t getTemp10(void) {
     ADCSRA |= _BV(ADSC);  // Start conversion
     loop_until_bit_is_clear(ADCSRA, ADSC);
     adc = ADC;
-    //TRACE(3,"ADC: %d\n", adc);
-    //T = ((ADC/1024)*VRef - TEMP_OFFSET ) / -TEMP_GAIN
-    //temp =  (TEMP_OFFSET*1024 - adc*ADC_VREF)/ (TEMP_GAIN*0.01024);
+    TRACE(3, "ADC: %d\n", adc);
+    // T = ((ADC/1024)*VRef - TEMP_OFFSET ) / -TEMP_GAIN
+    // T =  (TEMP_OFFSET*1024 - adc*ADC_VREF) / (TEMP_GAIN*0.01024);
     adc_vref =  getVcc100()/10;
     temp =  (TEMP_OFFSET*1024 - adc*adc_vref) / (TEMP_GAIN*0.01024);
     return (temp);
@@ -154,42 +100,37 @@ static void setup(void) {
     initWDT();
 }
 
-
-
 int main(void) {
     TRACE_init();
     setup();
 
     uint8_t switchClicked = 0;
-    uint8_t clickCount = SLEEP;
+    uint8_t clickCount = sleep;
     uint8_t logState = 0;
 
     for (;;) {
-        //TRACE("Internal temp: %d", getInternalTemp());
-        //TRACE("test %d\n", 5);
-//        if (debounce()) {
         if (debounce() && !(g_flagWDT)) {
             if (switchClicked == 0) {
-                clickCount = (clickCount+1) % STATEMAX; //rollover counter
+                clickCount = (clickCount+1) % STATEMAX;     // Rollover counter
                 if (clickCount == 0) {
                     resetCounterT1();
                 }
                 switchClicked = 1;
-                TRACE(1,"click:%d\n", clickCount);
+                TRACE(1, "click:%d\n", clickCount);
             }
         } else {
             switchClicked = 0;
         }
 
         if (expiredCounterT1() && !(g_flagWDT)) {
-            TRACE(1,"Timeout. click:%d\n", clickCount);
+            TRACE(1, "Timeout. click:%d\n", clickCount);
 
             if (clickCount == battery) {
-                TRACE(1,"Show battery. VCC10:%d\n", getVcc100()/10);
+                TRACE(1, "Show battery. VCC10:%d\n", getVcc100()/10);
             }
             if (clickCount == storage) {
                 uint16_t counter = eeprom_read_word(&romCnt);
-                TRACE(1,"Show storage. romCnt:%d\n", counter);
+                TRACE(1, "Show storage. romCnt:%d\n", counter);
             }
             if (clickCount == logging) {
                 if (!logState) {
@@ -199,22 +140,21 @@ int main(void) {
                     logState = 0;
                     stopWDT();
                 }
-                TRACE(1,"logstate:%d\n", logState);
+                TRACE(1, "logstate:%d\n", logState);
             }
             if (clickCount == sleep) {
-                TRACE(1,"Going to sleep. logState:%d\n", logState);
+                TRACE(1, "Going to sleep. logState:%d\n", logState);
                 doSleep();
-                TRACE(1,"Wakeup from sleep. logState:%d\n", logState);
+                TRACE(1, "Wakeup from sleep. logState:%d\n", logState);
             }
             clickCount = 0;
             resetCounterT1();
         }
 
         if ((logState && g_flagWDT)) {
-            TRACE(1,"Do logging. temp:%d\n", getTemp10());
+            TRACE(1, "Do logging. temp:%d\n", getTemp10());
             g_flagWDT = 0;
         }
-
     }
     return(0);
 }

@@ -1,5 +1,5 @@
-#ifndef __TRACE_H__
-#define __TRACE_H__
+#ifndef TRACE_H__
+#define TRACE_H__
 
 #ifdef TRACER
 
@@ -13,7 +13,7 @@
 #define TRACE_init() (initUSART())
 #define TRACEsize 40
 char TRACEbuff[TRACEsize];
-#define TRACE(verbose,fmt, ...)\
+#define TRACE(verbose, fmt, ...)\
     do {    \
         if (verbose <= TRACEVERBOSE) { \
             snprintf(TRACEbuff, TRACEsize, "%s (%d): " fmt, __FUNCTION__, __LINE__, __VA_ARGS__); \
@@ -26,6 +26,6 @@ char TRACEbuff[TRACEsize];
 #define TRACE_init()
 #define TRACE(fmt, ...)
 
-#endif //TRACE
+#endif  // TRACE
 
-#endif //__TRACE_H__
+#endif  // TRACE_H__
