@@ -77,8 +77,8 @@ void initWDT() {
     WDTCSR = _BV(WDCE);
     WDTCSR |= _BV(WDP3) | _BV(WDP0);    //~8s timeout
 }
-#define startWDT()  (WDTCSR |= _BV(WDIE)
-#define stopWDT()   (WDTCSR &= ~_BV(WDIE)
+#define startWDT()  (WDTCSR |= _BV(WDIE))
+#define stopWDT()   (WDTCSR &= ~_BV(WDIE))
 
 EMPTY_INTERRUPT(PCINT2_vect);
 
@@ -167,8 +167,8 @@ int main(void) {
     for (;;) {
         //TRACE("Internal temp: %d", getInternalTemp());
         //TRACE("test %d\n", 5);
-        if (debounce()) {
-//        if (debounce() && !(g_flagWDT)) {
+//        if (debounce()) {
+        if (debounce() && !(g_flagWDT)) {
             if (switchClicked == 0) {
                 clickCount = (clickCount+1) % STATEMAX; //rollover counter
                 if (clickCount == 0) {
@@ -181,7 +181,7 @@ int main(void) {
             switchClicked = 0;
         }
 
-        if (expiredCounterT1()) {
+        if (expiredCounterT1() && !(g_flagWDT)) {
             TRACE(1,"Timeout. click:%d\n", clickCount);
 
             if (clickCount == battery) {
@@ -194,8 +194,10 @@ int main(void) {
             if (clickCount == logging) {
                 if (!logState) {
                     logState = 1;
+                    startWDT();
                 } else {
                     logState = 0;
+                    stopWDT();
                 }
                 TRACE(1,"logstate:%d\n", logState);
             }
@@ -208,8 +210,9 @@ int main(void) {
             resetCounterT1();
         }
 
-        if (logState) {
+        if ((logState && g_flagWDT)) {
             TRACE(1,"Do logging. temp:%d\n", getTemp10());
+            g_flagWDT = 0;
         }
 
     }
