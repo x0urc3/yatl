@@ -152,7 +152,6 @@ int main(void) {
     uint8_t switchClicked = 0;
     uint8_t clickCount = SLEEP;
     uint8_t logState = 0;
-    uint8_t state;
 
     for (;;) {
         //TRACE("Internal temp: %d", getInternalTemp());
@@ -170,7 +169,7 @@ int main(void) {
             switchClicked = 0;
         }
 
-        if (expiredCounterT1() && (clickCount != SLEEP)) {
+        if (expiredCounterT1()) {
             TRACE(1,"Timeout. click:%d\n", clickCount);
 
             if (clickCount == battery) {
@@ -188,7 +187,11 @@ int main(void) {
                 }
                 TRACE(1,"logstate:%d\n", logState);
             }
-
+            if (clickCount == sleep) {
+                TRACE(1,"Going to sleep. logState:%d\n", logState);
+                doSleep();
+                TRACE(1,"Wakeup from sleep. logState:%d\n", logState);
+            }
             clickCount = 0;
             resetCounterT1();
         }
@@ -196,10 +199,6 @@ int main(void) {
         if (logState) {
             TRACE(1,"Do logging. temp:%d\n", getTemp10());
         }
-
-        TRACE(1,"Going to sleep. logState:%d\n", logState);
-        doSleep();
-        TRACE(1,"Wakeup from sleep. logState:%d\n", logState);
 
     }
     return(0);
