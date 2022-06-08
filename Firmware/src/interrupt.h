@@ -3,6 +3,8 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
+#define TIMEOUTWDT_1m   8       // 60s/8s = 7.5 ~ 8
+#define TIMEOUTWDT_2m   16
 volatile uint8_t g_flagWDT = 0;
 
 static void initInterrupt(void) {

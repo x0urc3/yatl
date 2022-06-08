@@ -3,7 +3,12 @@
 #include <avr/eeprom.h>
 
 #define ROM_DIRTYFLAG 0x7a
+#ifdef ARDUINO_AVR_ATmega48
+#define ROM_SIZE 250
+#else
 #define ROM_SIZE 500
+#endif
+
 uint8_t EEMEM romDirty;
 uint16_t EEMEM romCnt;
 uint8_t EEMEM romData[ROM_SIZE];

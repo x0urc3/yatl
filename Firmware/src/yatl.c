@@ -46,6 +46,12 @@ enum {sleep, battery, storage, logging} state;
 #define resetCounterT1() (TCNT1 = 0)
 #define expiredCounterT1() ((TCNT1 > TIMEOUTT1_MS) ? 1 : 0)
 
+#ifdef ARDUINO_AVR_ATmega48
+#define TIMEOUTWDT  TIMEOUTWDT_2m
+#else
+#define TIMEOUTWDT  TIMEOUTWDT_1m
+#endif
+
 static void initCounterT1(void) {
     TCCR1B = _BV(CS12) | _BV(CS10);     // 1Mhz/1024 = 976Hz ~ 1000Hz
 }
@@ -107,6 +113,7 @@ int main(void) {
     uint8_t switchClicked = 0;
     uint8_t clickCount = sleep;
     uint8_t logState = 0;
+    uint8_t countWDT = 0;
 
     for (;;) {
         if (debounce() && !(g_flagWDT)) {
@@ -152,7 +159,12 @@ int main(void) {
         }
 
         if ((logState && g_flagWDT)) {
-            TRACE(1, "Do logging. temp:%d\n", getTemp10());
+            if ( countWDT == TIMEOUTWDT ) {
+                TRACE(1, "Do logging. temp:%d\n", getTemp10());
+                countWDT = 0;
+            } else {
+                countWDT += 1;
+            }
             g_flagWDT = 0;
         }
     }
