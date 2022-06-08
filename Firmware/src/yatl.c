@@ -129,8 +129,8 @@ int main(void) {
                 TRACE(1, "Show battery. VCC10:%d\n", getVcc100()/10);
             }
             if (clickCount == storage) {
-                uint16_t counter = eeprom_read_word(&romCnt);
-                TRACE(1, "Show storage. romCnt:%d\n", counter);
+                uint16_t usage = eeprom_read_word(&romCnt);
+                TRACE(1, "Show storage. romCnt:%d\n", usage);
             }
             if (clickCount == logging) {
                 if (!logState) {
