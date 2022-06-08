@@ -10,19 +10,19 @@
 #endif
 
 uint8_t EEMEM romDirty;
-uint16_t EEMEM romCnt;
+uint16_t EEMEM romDataPnt;
 uint8_t EEMEM romData[ROM_SIZE];
 
 static void initEEPROM(void) {
     uint8_t flag;
-    uint16_t counter;
+    uint16_t addr;
     flag = eeprom_read_byte(&romDirty);
     if (flag != ROM_DIRTYFLAG) {
-        TRACE(3, "Reset counter. DIRTY:%d\n", flag);
-        counter = eeprom_read_word(&romCnt);
-        if (counter != 0) {
-            TRACE(3, "Reset counter. CNT:%d\n", counter);
-            eeprom_update_word(&romCnt, 0);
+        TRACE(3, "ROM is empty. DIRTY:%d\n", flag);
+        addr = eeprom_read_word(&romDataPnt);
+        if (addr != 0) {
+            TRACE(3, "Reset addr. addr:%d\n", addr);
+            eeprom_update_word(&romDataPnt, 0);
         }
     }
 }
