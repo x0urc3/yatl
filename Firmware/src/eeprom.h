@@ -48,7 +48,7 @@ uint8_t storeByteEEPROM(uint8_t data) {
     if (addr < ROM_SIZE) {
         TRACE(1, "Storing data:%d\n", data);
         TRACE(1, "Storing at addr:%d\n", addr);
-        eeprom_write_byte(&eeData.data[addr], data);
+        eeprom_update_byte(&eeData.data[addr], data);
 
         addr += 1;
         eeprom_write_word(&eeData.dataPnt, addr);
