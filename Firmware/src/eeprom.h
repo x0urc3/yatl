@@ -19,7 +19,7 @@ struct eeDataStruct EEMEM eeData = {0};     // Required to be defined
 
 #define usageEEPROM() (eeprom_read_word(&eeData.dataPnt))
 
-static void initEEPROM(void) {
+void initEEPROM(void) {
     uint8_t flag;
     uint16_t addr;
 
@@ -53,9 +53,9 @@ uint8_t storeByteEEPROM(uint8_t data) {
         addr += 1;
         eeprom_write_word(&eeData.dataPnt, addr);
 
-        return 1;
+        return 0;
     }
-    return 0;
+    return 1;
 }
 
 #endif  // EEPROM_H__

@@ -159,13 +159,13 @@ int main(void) {
         }
 
         if ((logState && g_flagWDT)) {
-//            if ( countWDT == TIMEOUTWDT ) {
-            if ( countWDT == 2 ) {
+            if ( countWDT == TIMEOUTWDT ) {
                 uint16_t temp = getTemp10();
                 TRACE(1, "Do logging. temp:%d\n", temp);
                 temp = temp - 200;      // Scale down to fit byte
-                uint8_t success = storeByteEEPROM(temp);
-                if (!success) {
+                uint8_t error = storeByteEEPROM(temp);
+                if (error != 0) {
+                    TRACE(1, "Storage full. error:%d\n", error);
                     logState = 0;
                     stopWDT();
                 }
