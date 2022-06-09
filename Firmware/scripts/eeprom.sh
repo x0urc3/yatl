@@ -10,9 +10,11 @@ AVRDUDECONF=$PIOPATH'tool-avrdude/avrdude.conf'
 #AVRDUDECMD= $AVRDUDEBIN' -C '$AVRDUDECONF' -c stk500v1 -p m328p -P /dev/ttyUSB0 -b 19200'
 
 usage() {
-    echo "Usage: $0 [-d|-r]"
+    echo "Usage: $0 [OPTIONS]"
+    echo "[OPTIONS]"
     echo -e "\t-d\tDump eeprom to file"
     echo -e "\t-r\tReset eeprom dirty flag"
+    echo -e "\t-t\tAvrdude terminal"
     exit 0;
 }
 
@@ -35,8 +37,13 @@ quit
 END
 }
 
+terminal() {
+    echo -e "${GREEN}Avrdude terminal${NC}"
+    $AVRDUDEBIN -C $AVRDUDECONF -c stk500v1 -p m328p -P /dev/ttyUSB0 -b 19200 -t
+}
+
 #Process arguments
-while getopts "dr" arg; do
+while getopts "drt" arg; do
     case $arg in
         d)
             isp
@@ -45,6 +52,10 @@ while getopts "dr" arg; do
         r)
             isp
             reset
+            ;;
+        t)
+            isp
+            terminal
             ;;
         *)
             usage
