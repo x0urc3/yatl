@@ -159,8 +159,16 @@ int main(void) {
         }
 
         if ((logState && g_flagWDT)) {
-            if ( countWDT == TIMEOUTWDT ) {
-                TRACE(1, "Do logging. temp:%d\n", getTemp10());
+//            if ( countWDT == TIMEOUTWDT ) {
+            if ( countWDT == 2 ) {
+                uint16_t temp = getTemp10();
+                TRACE(1, "Do logging. temp:%d\n", temp);
+                temp = temp - 200;      // Scale down to fit byte
+                uint8_t success = storeByteEEPROM(temp);
+                if (!success) {
+                    logState = 0;
+                    stopWDT();
+                }
                 countWDT = 0;
             } else {
                 countWDT += 1;
