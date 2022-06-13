@@ -32,7 +32,7 @@ dump() {
 reset() {
     echo -e "${GREEN}Reset dirty flag${NC}"
     $AVRDUDEBIN -C $AVRDUDECONF -c stk500v1 -p m328p -P /dev/ttyUSB0 -b 19200 -t<<END
-write eeprom 0x00 0xff
+write eeprom 0x00 0xffff
 quit
 END
 }
