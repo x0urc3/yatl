@@ -5,13 +5,15 @@ import sys
 import re
 from intelhex import IntelHex
 TEMPOFFSET = 200
-DATAOFFSET = 3      #1Byte dirty flag, 2Byte data pointer
+DIRTYFLAG = 2           #Store 2byte dirty flag
+DATAPOINTER = 2         #Store 2byte address
+DATAOFFSET = DIRTYFLAG + DATAPOINTER
 
 iFName = sys.argv[1]
 ih = IntelHex(iFName)
 
-byteAddrL = ih[1]
-byteAddrH = ih[2]
+byteAddrL = ih[2]
+byteAddrH = ih[3]
 byteAddr = (byteAddrH<<8) | byteAddrL
 print("Reading ",byteAddr,"byte\n")
 data=ih.tobinarray()
