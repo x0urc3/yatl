@@ -1,3 +1,9 @@
+/* interrupt.h Copyright (c) 2022 Khairulmizam Samsudin <xource@gmail.com
+ *
+ * Interrupt functions
+ *
+ */
+
 #ifndef INTERRUPT_H__
 #define INTERRUPT_H__
 #include <avr/io.h>

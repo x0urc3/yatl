@@ -1,3 +1,9 @@
+/* adc.h Copyright (c) 2022 Khairulmizam Samsudin <xource@gmail.com
+ *
+ * Functions for using ADC
+ *
+ */
+
 #ifndef ADC_H_
 #define ADC_H_
 #include <avr/io.h>

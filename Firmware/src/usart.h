@@ -1,6 +1,9 @@
-/*
- * usart.h - Functions to initialize, send, receive over USART
+/* usart.h Copyright (c) 2022 Khairulmizam Samsudin <xource@gmail.com
+ *
+ * Functions to initialize, send, receive over USART
+ *
  */
+
 #ifndef USART_H__
 #define USART_H__
 

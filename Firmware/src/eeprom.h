@@ -1,3 +1,9 @@
+/* eeprom.h Copyright (c) 2022 Khairulmizam Samsudin <xource@gmail.com
+ *
+ * EEPROM functions
+ *
+ */
+
 #ifndef EEPROM_H__
 #define EEPROM_H__
 #include <avr/eeprom.h>

@@ -1,3 +1,9 @@
+/* trace.h Copyright (c) 2022 Khairulmizam Samsudin <xource@gmail.com
+ *
+ * Tracing functions for debugging purposes
+ *
+ */
+
 #ifndef TRACE_H__
 #define TRACE_H__
 
