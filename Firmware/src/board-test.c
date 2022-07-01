@@ -2,19 +2,27 @@
 #include <util/delay.h>
 #include "trace.h"
 
-//#define LED_PIN PB2
-#define LED_PIN PB0
-int main(void) {
-    //setup
-    TRACE_init();
-//    DDRB |= (1 << LED_PIN);
-    DDRB |= _BV(LED_PIN);
+#define LED1        PB0   //       |  x     |  x
+#define LED2        PB1   //       |  x     |  x
+#define LED3        PB2   //       |  x     |  x
 
-    //loop
+int main(void) {
+    TRACE_init();
+    TRACE(1,"Initialize board %d\n",sizeof(int));
+    DDRB |= 0x7;
+
+    int val = 0;
     while (1) {
-        PORTB ^= _BV(LED_PIN);
-        TRACE(1,"Test serial %d",1);
-        _delay_ms(1000);
+        TRACE(1,"Shift right. Button press:%d\n",val);
+        for (val = 0x1; val != 0x8; val <<= 1){
+            PORTB = val;
+            _delay_ms(1000);
+        }
+        TRACE(1,"Shift left. Button press:%d\n",val);
+        for (val = 0x04; val != 0x0; val >>= 1) {
+            PORTB = val;
+            _delay_ms(1000);
+        }
     }
 
     return(0);
