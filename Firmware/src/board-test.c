@@ -9,14 +9,22 @@ ISR(INT0_vect) {
     shiftL ^= 0xff;
 }
 
-int main(void) {
+void setup(void) {
     TRACE_init();
     TRACE(1,"Initialize board %d\n",sizeof(int));
+
     DDRB |= 0x7;                    // LED output
+
     SWITCH_PORT |= _BV(SWITCH);     // Enable pullup for switch
     EIMSK = _BV(INT0);              // Switch is tied to INT0
-    EICRA = _BV(ISC01);
+    EICRA = _BV(ISC01);             // Interrupt on falling edge
     sei();
+
+    initADC();
+}
+
+int main(void) {
+    setup();
 
     int val = 0;
     while (1) {
@@ -35,6 +43,5 @@ int main(void) {
             }
         }
     }
-
     return(0);
 }
