@@ -52,6 +52,15 @@ static void doSleep() {
     cli();
 }
 
+static void doStatusLED(int n) {
+    uint8_t output[] = {0x0, 0x1, 0x3, 0x7};
+    if (n == 0) {
+        LEDPORT &= ~(0x7);
+    } else {
+        LEDPORT |= output[n];
+    }
+}
+
 static void setup(void) {
     initADC();
     initEEPROM();
@@ -59,6 +68,7 @@ static void setup(void) {
     initCounterT1();
     initInterrupt();
     initWDT();
+    LEDDDR |= 0x7;
 }
 
 int main(void) {
@@ -79,6 +89,8 @@ int main(void) {
                 }
                 switchClicked = 1;
                 TRACE(1, "click:%d\n", clickCount);
+
+                doStatusLED(clickCount);
             }
         } else {
             switchClicked = 0;

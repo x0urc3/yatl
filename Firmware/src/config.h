@@ -24,7 +24,7 @@
 #define LED1        PB0   //       |  x     |  x
 #define LED2        PB1   //       |  x     |  x
 #define LED3        PB2   //       |  x     |  x
-#define LEDPIN      PINB
+#define LEDDDR      DDRB
 #define LEDPORT     PORTB
 #define TEMPPIN     0xf0  //   23  |  A0
 #define SWITCH      PD2   //       |  x     |  x
