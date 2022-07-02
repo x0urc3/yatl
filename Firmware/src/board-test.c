@@ -1,15 +1,8 @@
+#include "config.h"
+#include "trace.h"
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
-#include "trace.h"
-
-#define LED1        PB0
-#define LED2        PB1
-#define LED3        PB2
-#define SWITCH      PD2
-#define SWITCH_PIN  PIND
-#define SWITCH_PORT PORTD
-#define SWITCH_DEBOUNCE_TIME 100
 
 volatile int shiftL = 0;
 ISR(INT0_vect) {
