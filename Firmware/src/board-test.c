@@ -1,5 +1,6 @@
 #include "config.h"
 #include "trace.h"
+#include "adc.h"
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
@@ -27,6 +28,7 @@ int main(void) {
     setup();
 
     int val = 0;
+    int temp = 0;
     while (1) {
         if (shiftL == 0) {
             TRACE(1,"Shift right. shiftL:%d\n", shiftL);
@@ -42,6 +44,10 @@ int main(void) {
                 _delay_ms(1000);
             }
         }
+
+        temp = getTemp10();
+        TRACE(1, "getTemp10():%d\n", temp);
     }
+
     return(0);
 }
