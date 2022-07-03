@@ -16,7 +16,7 @@
 enum {sleep, battery, storage, logging} state;
 #define STATEMAX 4
 
-#define TIMEOUTT1_MS 5000
+#define TIMEOUTT1_MS 3000
 #define resetCounterT1() (TCNT1 = 0)
 #define expiredCounterT1() ((TCNT1 > TIMEOUTT1_MS) ? 1 : 0)
 
@@ -75,15 +75,16 @@ static void showResultLED(int min, int max, int val) {
         doStatusLED(1);
     }
 
-    _delay_us(2000);
+    _delay_ms(2000);
     doStatusLED(0);
 }
 
 static void doBlinkLED(int n) {
     for (int i = 0; i< 3; i++) {
         doStatusLED(0);
-        _delay_us(500);
+        _delay_ms(500);
         doStatusLED(n);
+        _delay_ms(500);
     }
     doStatusLED(0);
 }
