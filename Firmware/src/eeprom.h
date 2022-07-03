@@ -24,6 +24,7 @@ struct eeDataStruct {
 struct eeDataStruct EEMEM eeData = {0};     // Required to be defined
 
 #define usageEEPROM() (eeprom_read_word(&eeData.dataPnt))
+#define maxEEPROM() (ROM_SIZE)
 
 void initEEPROM(void) {
     uint16_t flag;
