@@ -61,6 +61,15 @@ static void doStatusLED(int n) {
     }
 }
 
+static void doBlinkLED(int n) {
+    for (int i = 0; i< 3; i++) {
+        doStatusLED(0);
+        _delay_us(500);
+        doStatusLED(n);
+    }
+    doStatusLED(0);
+}
+
 static void setup(void) {
     initADC();
     initEEPROM();
@@ -97,6 +106,7 @@ int main(void) {
         }
 
         if (expiredCounterT1() && !(g_flagWDT)) {
+            doBlinkLED(clickCount);
             TRACE(1, "Timeout. click:%d\n", clickCount);
 
             if (clickCount == battery) {
