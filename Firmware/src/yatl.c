@@ -61,6 +61,24 @@ static void doStatusLED(int n) {
     }
 }
 
+static void showResultLED(int min, int max, int val) {
+    int step = (max-min)/STATEMAX;
+    int range75 = step*3;
+    int range50 = step*2;
+    int range25 = step*1;
+
+    if (val > range75) {
+        doStatusLED(3);
+    } else if (val > range50) {
+        doStatusLED(2);
+    } else if (val > range25) {
+        doStatusLED(1);
+    }
+
+    _delay_us(2000);
+    doStatusLED(0);
+}
+
 static void doBlinkLED(int n) {
     for (int i = 0; i< 3; i++) {
         doStatusLED(0);
@@ -110,10 +128,13 @@ int main(void) {
             TRACE(1, "Timeout. click:%d\n", clickCount);
 
             if (clickCount == battery) {
-                TRACE(1, "Show battery. VCC10:%d\n", getVcc100()/10);
+                uint16_t vcc100 = getVcc100();
+                showResultLED(270,300,vcc100);
+                TRACE(1, "Show battery. VCC100:%d\n", vcc100);
             }
             if (clickCount == storage) {
                 uint16_t usage = usageEEPROM();
+                showResultLED(0,maxEEPROM(),usage);
                 TRACE(1, "Show storage. romDataPnt:%d\n", usage);
             }
             if (clickCount == logging) {
