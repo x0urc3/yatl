@@ -4,14 +4,17 @@ GREEN='\033[0;32m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
+UC=m328p
+UC=m48
 PIOPATH=$HOME'/.platformio/packages/'
 AVRDUDEBIN=$PIOPATH'tool-avrdude/avrdude'
 AVRDUDECONF=$PIOPATH'tool-avrdude/avrdude.conf'
-#AVRDUDECMD= $AVRDUDEBIN' -C '$AVRDUDECONF' -c stk500v1 -p m328p -P /dev/ttyUSB0 -b 19200'
+FNAME='./data/'`date +%d%m%Y`'.hex'
 
 usage() {
     echo "Usage: $0 [OPTIONS]"
     echo "[OPTIONS]"
+    echo -e "\t-i\tUpload ArduinoISP"
     echo -e "\t-d\tDump eeprom to file"
     echo -e "\t-r\tReset eeprom dirty flag"
     echo -e "\t-t\tAvrdude terminal"
@@ -24,37 +27,37 @@ isp() {
 }
 
 dump() {
-    FNAME='./data/'`date +%d%m%Y`'.hex'
     echo -e "${GREEN}Dump EEPROM data to $FNAME${NC}"
-    $AVRDUDEBIN -C $AVRDUDECONF -c stk500v1 -p m328p -P /dev/ttyUSB0 -b 19200 -U eeprom:r:$FNAME:i
+    $AVRDUDEBIN -C $AVRDUDECONF -c stk500v1 -p $UC -P /dev/ttyUSB0 -b 19200 -U eeprom:r:$FNAME:i
 }
 
 reset() {
     echo -e "${GREEN}Reset dirty flag${NC}"
-    $AVRDUDEBIN -C $AVRDUDECONF -c stk500v1 -p m328p -P /dev/ttyUSB0 -b 19200 -t<<END
-write eeprom 0x00 0xffff
+    $AVRDUDEBIN -C $AVRDUDECONF -c stk500v1 -p $UC -P /dev/ttyUSB0 -b 19200 -t<<END
+write eeprom 0x0 0xffff
 quit
 END
 }
 
 terminal() {
     echo -e "${GREEN}Avrdude terminal${NC}"
-    $AVRDUDEBIN -C $AVRDUDECONF -c stk500v1 -p m328p -P /dev/ttyUSB0 -b 19200 -t
+    $AVRDUDEBIN -C $AVRDUDECONF -c stk500v1 -p $UC -P /dev/ttyUSB0 -b 19200 -t
 }
 
 #Process arguments
-while getopts "drt" arg; do
+while getopts "drti" arg; do
     case $arg in
-        d)
+        i)
             isp
+            ;;
+        d)
+            FNAME='-'
             dump
             ;;
         r)
-            isp
             reset
             ;;
         t)
-            isp
             terminal
             ;;
         *)
