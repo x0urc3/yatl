@@ -142,6 +142,13 @@ int main(void) {
                 if (!logState) {
                     logState = 1;
                     startWDT();
+                    doStatusLED(1);
+                    _delay_ms(500);
+                    doStatusLED(2);
+                    _delay_ms(500);
+                    doStatusLED(3);
+                    _delay_ms(500);
+                    doStatusLED(0);
                 } else {
                     logState = 0;
                     stopWDT();
