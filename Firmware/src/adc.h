@@ -59,8 +59,8 @@ static uint16_t getVcc100(void) {
 
 static uint16_t getTemp10(void) {
     uint16_t temp;
-    uint16_t adc_vref;
     uint16_t adc;
+    uint16_t adc_vref =  getVcc100()/10;
 
     ADMUX = _BV(REFS0);   // Vcc as Voltage Ref
     ADMUX &= TEMPPIN;     // Select temperature pin
@@ -71,7 +71,6 @@ static uint16_t getTemp10(void) {
     TRACE(3, "ADC: %d\n", adc);
     // T = ((ADC/1024)*VRef - TEMP_OFFSET ) / -TEMP_GAIN
     // T =  (TEMP_OFFSET*1024 - adc*ADC_VREF) / (TEMP_GAIN*0.01024);
-    adc_vref =  getVcc100()/10;
     temp =  (TEMP_OFFSET*1024 - adc*adc_vref) / (TEMP_GAIN*0.01024);
     return (temp);
 }
