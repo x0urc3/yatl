@@ -8,6 +8,7 @@
 #define INTERRUPT_H__
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <avr/wdt.h>
 
 #define TIMEOUTWDT_1m   8       // 60s/8s = 7.5 ~ 8
 #define TIMEOUTWDT_2m   16
@@ -21,8 +22,14 @@ static void initInterrupt(void) {
 EMPTY_INTERRUPT(PCINT2_vect);
 
 void initWDT() {
-    WDTCSR = _BV(WDCE);
-    WDTCSR |= _BV(WDP3) | _BV(WDP0);    // ~8s timeout
+    cli();
+    MCUSR &= ~_BV(WDRF);
+
+//    WDTCSR = _BV(WDIF) | _BV(WDIE) | WDTO_8S| _BV(WDCE) | _BV(WDE);
+//    WDTCSR = _BV(WDIF) | _BV(WDIE) | WDTO_8S;   //Clear WDCE and WDE
+    WDTCSR = 0xf9;
+//    WDTCSR = 0xe1;   //Clear WDCE and WDE
+    WDTCSR = 0xa1;   //Clear WDIE, WDCE and WDE
 }
 #define startWDT()  (WDTCSR |= _BV(WDIE))
 #define stopWDT()   (WDTCSR &= ~_BV(WDIE))
