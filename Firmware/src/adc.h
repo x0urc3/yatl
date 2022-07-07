@@ -29,17 +29,29 @@ static void initADC(void) {
     ADCSRA |= _BV(ADEN);
 }
 
+/*
+ * Perform ADC conversion. First ADC result after switching voltage ref maybe
+ * inaccurate. Repeat conversion as necessary
+ */
+void doADCConversion(int repeat) {
+    _delay_ms(10);                 // Settling time after changing ADMUX
+    for (int i=0; i<repeat; i++) {
+        ADCSRA |= _BV(ADSC);           // Start conversion
+        loop_until_bit_is_clear(ADCSRA, ADSC);
+    }
+}
+
+
 static uint16_t getInternalTemp(void) {
     uint16_t temp;
 
     ADMUX = _BV(REFS1) | _BV(REFS0);    // Internal 1.1V VRef
     ADMUX |= _BV(MUX3);                 // Select ADC8 i.e. Temp sensor
-    _delay_ms(10);                      // Settling time after changing ADMUX
-    ADCSRA |= _BV(ADSC);                // Start conversion
-    loop_until_bit_is_clear(ADCSRA, ADSC);
+    doADCConversion(2);
     temp = ITEMP_GAIN * (ADC - ITEMP_OFFSET);
     return (temp);
 }
+
 
 /*
  * Get VCC using internal 1.1V VRef
@@ -49,9 +61,7 @@ static uint16_t getVcc100(void) {
 
     ADMUX = _BV(REFS0);            // Vcc as Voltage Ref
     ADMUX |= _BV(MUX3) | _BV(MUX2) | _BV(MUX1);
-    _delay_ms(10);                 // Settling time after changing ADMUX
-    ADCSRA |= _BV(ADSC);           // Start conversion
-    loop_until_bit_is_clear(ADCSRA, ADSC);
+    doADCConversion(2);
     // vcc = 110 * 1024 / ADC;
     vcc = 112640 / ADC;
     return (vcc);
@@ -64,9 +74,7 @@ static uint16_t getTemp10(void) {
 
     ADMUX = _BV(REFS0);   // Vcc as Voltage Ref
     ADMUX &= TEMPPIN;     // Select temperature pin
-    _delay_ms(10);        // Settling time after changing ADMUX
-    ADCSRA |= _BV(ADSC);  // Start conversion
-    loop_until_bit_is_clear(ADCSRA, ADSC);
+    doADCConversion(2);
     adc = ADC;
     TRACE(3, "ADC: %d\n", adc);
     // T = ((ADC/1024)*VRef - TEMP_OFFSET ) / -TEMP_GAIN
