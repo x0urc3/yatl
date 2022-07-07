@@ -19,11 +19,16 @@
 #define TRACE_init() (initUSART())
 #define TRACEsize 40
 char TRACEbuff[TRACEsize];
+#define T(fmt, ...)\
+    do {    \
+        snprintf(TRACEbuff, TRACEsize, fmt,  __VA_ARGS__); \
+        usart_txString(TRACEbuff); \
+    } while (0)
+
 #define TRACE(verbose, fmt, ...)\
     do {    \
         if (verbose <= TRACEVERBOSE) { \
-            snprintf(TRACEbuff, TRACEsize, "%s (%d): " fmt, __FUNCTION__, __LINE__, __VA_ARGS__); \
-            usart_txString(TRACEbuff); \
+            T("%s (%d): " fmt, __FUNCTION__, __LINE__, __VA_ARGS__); \
         } \
     } while (0)
 
