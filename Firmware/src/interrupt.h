@@ -30,6 +30,7 @@ void initWDT() {
     WDTCSR = 0xf9;
 //    WDTCSR = 0xe1;   //Clear WDCE and WDE
     WDTCSR = 0xa1;   //Clear WDIE, WDCE and WDE
+    TRACE(1,"WDTCSR:%X",WDTCSR);
 }
 #define startWDT()  (WDTCSR |= _BV(WDIE))
 #define stopWDT()   (WDTCSR &= ~_BV(WDIE))
