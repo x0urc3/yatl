@@ -136,6 +136,11 @@
   #define SERIAL Serial
 #endif
 
+// Configure software serial port to use.
+#include <SoftwareSerial.h>
+#define PIN_RX 2
+#define PIN_TX 3
+SoftwareSerial SWSERIAL(PIN_RX, PIN_TX);
 
 // Configure the baud rate:
 
