@@ -612,6 +612,39 @@ void read_signature() {
   SERIAL.print((char) STK_OK);
 }
 
+void monitor() {
+  bool doMonitor = true;
+  char ch;
+  SERIAL.println("--- Monitor mode");
+  SERIAL.println("--- Quit: q Reset: r\t");
+  SERIAL.flush();
+
+  while (doMonitor) {
+    if (SERIAL.available()) {
+      ch = SERIAL.read();
+      switch (ch) {
+        case 'q':
+          doMonitor = false;
+          SERIAL.println("--- Quitting monitor mode");
+          SERIAL.flush();
+          break;
+        case 'r':
+          SERIAL.println("--- Resetting target");
+          SERIAL.flush();
+          digitalWrite(RESET, LOW);
+          delay(1000);
+          digitalWrite(RESET, HIGH);
+          break;
+      }
+    }
+    if (SWSERIAL.available()) {
+      ch = SWSERIAL.read();
+      SERIAL.print(ch);
+      SERIAL.flush();
+    }
+  }
+}
+
 void avrisp() {
   uint8_t ch = getch();
   switch (ch) {
@@ -691,6 +724,11 @@ void avrisp() {
       SERIAL.print((char) STK_NOSYNC);
       break;
 
+    case 'm':
+      SERIAL.print("Entering monitor mode...\n");
+      monitor();
+      break;
+
     // anything else we will return STK_UNKNOWN
     default:
       ISPError++;
@@ -709,6 +747,7 @@ void avrisp() {
 ////////////////////////////////////
 void setup() {
   SERIAL.begin(BAUDRATE);
+  SWSERIAL.begin(BAUDRATE);
 
   pinMode(LED_PMODE, OUTPUT);
   pulse(LED_PMODE, 2);
