@@ -747,7 +747,7 @@ void avrisp() {
 ////////////////////////////////////
 void setup() {
   SERIAL.begin(BAUDRATE);
-  SWSERIAL.begin(BAUDRATE);
+  SWSERIAL.begin(9600);
 
   pinMode(LED_PMODE, OUTPUT);
   pulse(LED_PMODE, 2);
