@@ -33,6 +33,8 @@ fp-info-cache
 .gcc-flags.json
 .pio
 
+# CMake
+build
 
 #Misc
 ref/
