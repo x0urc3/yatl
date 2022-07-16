@@ -42,3 +42,4 @@ out/
 tags
 .vimrc.custom
 data/
+*.swp
