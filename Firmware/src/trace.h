@@ -7,6 +7,10 @@
 #ifndef TRACE_H__
 #define TRACE_H__
 
+#ifdef NDEBUG
+#undef TRACER
+#endif
+
 #ifdef TRACER
 
 #ifndef TRACEVERBOSE
