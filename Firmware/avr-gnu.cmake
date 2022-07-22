@@ -3,8 +3,8 @@ if (NOT AVR_MCU)
     set(AVR_MCU atmega328p CACHE STRING "Set -mmcu. Default: atmega328")
     message(STATUS "Building for AVR ${AVR_MCU}")
 endif (NOT AVR_MCU)
-set(TOOL_UPLOAD_ARGS -c stk500v1 -P /dev/ttyUSB0 -b 19200
-    CACHE STRING "Set avrdude arguments: Default: -c stk500v1 -P /dev/ttyUSB0 -b 19200")
+set(TOOL_UPLOAD_ARGS -c stk500v1 -P /dev/ttyUSB0 -b 19200 -q
+    CACHE STRING "Set avrdude arguments: Default: -c stk500v1 -P /dev/ttyUSB0 -b 19200 -q")
 set(TOOL_SIZE_ARGS -C CACHE STRING "Set arguments. Default: -C")
 set(AVR_BAUD 9600 CACHE STRING "Set AVR Baudrate. Default: 9600")
 set(AVR_FUSE_L 0x62 CACHE STRING "Set Low Fuse. Default: 0x62")
@@ -82,7 +82,7 @@ function(add_avr_executable PRODUCT_NAME)
         )
 
     set_directory_properties(
-        PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES "${PRODUCT_NAME}.hex;${PRODUCT_NAME}.eeprom"
+        PROPERTIES ADDITIONAL_CLEAN_FILES "${PRODUCT_NAME}.hex;${PRODUCT_NAME}.eeprom"
         )
 
 endfunction(add_avr_executable)
