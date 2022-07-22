@@ -22,20 +22,47 @@ find_program(TOOL_UPLOAD avrdude REQUIRED DOC "Set AVR upload tool. Default: avr
 find_program(TOOL_SIZE avr-size REQUIRED DOC "Set binary size tool. Default: avr-size")
 find_program(TOOL_STRIP avr-strip REQUIRED DOC "Set binary strip tool. Default: avr-strip")
 
-function(add_avr_executable PRODUCT_NAME)
-    add_executable(${PRODUCT_NAME} src/yatl.c)
+function(add_avr_target FIRMWARE)
+    add_custom_target(hex
+        ALL ${CMAKE_OBJCOPY} -R .eeprom -O ihex ${FIRMWARE}.elf ${FIRMWARE}.hex
+        DEPENDS ${FIRMWARE}
+        )
 
-    target_compile_definitions(${PRODUCT_NAME} PRIVATE
+    add_custom_target(upload
+        ALL ${TOOL_UPLOAD} ${TOOL_UPLOAD_ARGS} -p ${AVR_MCU} -U flash:w:${FIRMWARE}.hex
+        DEPENDS hex
+        )
+
+    add_custom_target(eeprom ${CMAKE_OBJCOPY} -j .eeprom  --set-section-flags=.eeprom="alloc,load" --change-section-lma .eeprom=0 -O ihex ${FIRMWARE}.elf ${FIRMWARE}.eep
+        DEPENDS ${FIRMWARE}
+        )
+
+    add_custom_target(uploadeep ${TOOL_UPLOAD} ${TOOL_UPLOAD_ARGS} -p ${AVR_MCU} -U eeprom:w:${FIRMWARE}.eep
+        DEPENDS eeprom
+        )
+
+    add_custom_target(fuses ${TOOL_UPLOAD} ${TOOL_UPLOAD_ARGS} -p ${AVR_MCU} -U lfuse:w:${AVR_FUSE_L}:m -U hfuse:w:${AVR_FUSE_H}:m -U efuse:w:${AVR_FUSE_E}:m -U lock:w:${AVR_LOCKBIT}:m
+        )
+
+    add_custom_target(show_fuses ${TOOL_UPLOAD} ${TOOL_UPLOAD_ARGS} -p ${AVR_MCU} -U lfuse:r:-:h -U hfuse:r:-:h -U efuse:r:-:h -U lock:r:-:h
+        )
+
+endfunction(add_avr_target)
+
+function(add_avr_executable FIRMWARE)
+    add_executable(${FIRMWARE} src/yatl.c)
+
+    target_compile_definitions(${FIRMWARE} PRIVATE
         -DF_CPU=${AVR_MCU_F}
         -DBAUD=${AVR_BAUD}
         )
 
-    target_link_options(${PRODUCT_NAME} PRIVATE
+    target_link_options(${FIRMWARE} PRIVATE
         -mmcu=${AVR_MCU}
         -flto
         )
 
-    target_compile_options(${PRODUCT_NAME} PRIVATE
+    target_compile_options(${FIRMWARE} PRIVATE
         -mmcu=${AVR_MCU} # AVR_MCU
         -std=gnu11
         -Wall # enable warnings
@@ -46,43 +73,21 @@ function(add_avr_executable PRODUCT_NAME)
         -fuse-linker-plugin
         )
 
-    set_target_properties(${PRODUCT_NAME} PROPERTIES OUTPUT_NAME ${PRODUCT_NAME}.elf)
+    set_target_properties(${FIRMWARE} PROPERTIES OUTPUT_NAME ${FIRMWARE}.elf)
 
-    add_custom_command(TARGET ${PRODUCT_NAME} POST_BUILD
-        COMMAND ${TOOL_SIZE} ARGS ${TOOL_SIZE_ARGS} ${PRODUCT_NAME}.elf
+    add_custom_command(TARGET ${FIRMWARE} POST_BUILD
+        COMMAND ${TOOL_SIZE} ARGS ${TOOL_SIZE_ARGS} ${FIRMWARE}.elf
         VERBATIM)
 
-    add_custom_command(TARGET ${PRODUCT_NAME} POST_BUILD
-        COMMAND "$<$<CONFIG:release,minsizerel>:${TOOL_STRIP};${PRODUCT_NAME}.elf>"
+    add_custom_command(TARGET ${FIRMWARE} POST_BUILD
+        COMMAND "$<$<CONFIG:release,minsizerel>:${TOOL_STRIP};${FIRMWARE}.elf>"
         COMMAND_EXPAND_LISTS
         )
 
-    add_custom_target(hex
-        ALL ${CMAKE_OBJCOPY} -R .eeprom -O ihex ${PRODUCT_NAME}.elf ${PRODUCT_NAME}.hex
-        DEPENDS ${PRODUCT_NAME}
-        )
-
-    add_custom_target(upload
-        ALL ${TOOL_UPLOAD} ${TOOL_UPLOAD_ARGS} -p ${AVR_MCU} -U flash:w:${PRODUCT_NAME}.hex
-        DEPENDS hex
-        )
-
-    add_custom_target(eeprom ${CMAKE_OBJCOPY} -j .eeprom  --set-section-flags=.eeprom="alloc,load" --change-section-lma .eeprom=0 -O ihex ${PRODUCT_NAME}.elf ${PRODUCT_NAME}.eep
-        DEPENDS ${PRODUCT_NAME}
-        )
-
-    add_custom_target(uploadeep ${TOOL_UPLOAD} ${TOOL_UPLOAD_ARGS} -p ${AVR_MCU} -U eeprom:w:${PRODUCT_NAME}.eep
-        DEPENDS eeprom
-        )
-
-    add_custom_target(fuses ${TOOL_UPLOAD} ${TOOL_UPLOAD_ARGS} -p ${AVR_MCU} -U lfuse:w:${AVR_FUSE_L}:m -U hfuse:w:${AVR_FUSE_H}:m -U efuse:w:${AVR_FUSE_E}:m -U lock:w:${AVR_LOCKBIT}:m
-        )
-
-    add_custom_target(show_fuses ${TOOL_UPLOAD} ${TOOL_UPLOAD_ARGS} -p ${AVR_MCU} -U lfuse:r:-:h -U hfuse:r:-:h -U efuse:r:-:h -U lock:r:-:h
-        )
+    add_avr_target(${FIRMWARE})
 
     set_directory_properties(
-        PROPERTIES ADDITIONAL_CLEAN_FILES "${PRODUCT_NAME}.hex;${PRODUCT_NAME}.eeprom"
+        PROPERTIES ADDITIONAL_CLEAN_FILES "${FIRMWARE}.hex;${FIRMWARE}.eeprom"
         )
 
 endfunction(add_avr_executable)
