@@ -1,3 +1,8 @@
+# avr-gnu.cmake Copyright (c) 2022 Khairulmizam Samsudin <xource@gmail.com
+#
+# CMake toolchain for AVR microcontroller that depends on GNU AVR project and avrdude
+#
+
 set(AVR_MCU_F 1000000UL CACHE STRING "Set -DF_CPU. Default: 1000000UL")
 if (NOT AVR_MCU)
     set(AVR_MCU atmega328p CACHE STRING "Set -mmcu. Default: atmega328")
